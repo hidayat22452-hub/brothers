@@ -1,0 +1,192 @@
+/**
+ * FlightOps System Hub - Backend (Google Apps Script)
+ * Manages both ArrivalOperations and DepartureOperations in the same Spreadsheet.
+ */
+function doGet() {
+  return HtmlService.createtamplateFromFile('index')
+    .evaluate()
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1.0')
+    .setXFrameOptionMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+function doGet() {
+  return HtmlService.createHtmlOutputFromFile('index')
+    .setTitle('FlightOps System Hub - Arrival & Departure')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+function getActiveSpreadsheet_() {
+  try {
+    return SpreadsheetApp.getActiveSpreadsheet();
+  } catch (e) {
+    throw new Error("Gagal membaca Google Spreadsheet. Pastikan script ini terikat (bound) pada spreadsheet Google.");
+  }
+}
+
+function setupSpreadsheetStructure() {
+  const ss = getActiveSpreadsheet_();
+  
+  // 1. Setup ArrivalOperations Sheet
+  let arrSheet = ss.getSheetByName("ArrivalOperations");
+  if (!arrSheet) {
+    arrSheet = ss.insertSheet("ArrivalOperations");
+  }
+  const arrHeaders = ["GROUND HANDLING", "NO FLIGHT", "ORIGIN", "BCB NO", "PARKING STAND", "AIBT"];
+  if (arrSheet.getLastRow() === 0) {
+    arrSheet.appendRow(arrHeaders);
+  } else {
+    arrSheet.getRange(1, 1, 1, arrHeaders.length).setValues([arrHeaders]);
+  }
+
+  // 2. Setup DepartureOperations Sheet
+  let depSheet = ss.getSheetByName("DepartureOperations");
+  if (!depSheet) {
+    depSheet = ss.insertSheet("DepartureOperations");
+  }
+  const depHeaders = ["DESK COUNTER", "MASKAPAI", "FLIGHT NO", "DOS", "TIPE PESAWAT", "JAM BUKA", "JAM TUTUP", "STD"];
+  if (depSheet.getLastRow() === 0) {
+    depSheet.appendRow(depHeaders);
+  } else {
+    depSheet.getRange(1, 1, 1, depHeaders.length).setValues([depHeaders]);
+  }
+
+  return "Spreadsheet structure setup successfully for Arrival and Departure Operations!";
+}
+
+function getAllFlightOpsData() {
+  const ss = getActiveSpreadsheet_();
+  if (!ss) {
+    throw new Error("Spreadsheet aktif tidak ditemukan.");
+  }
+  
+  // Get Arrival Data
+  let arrSheet = ss.getSheetByName("ArrivalOperations");
+  if (!arrSheet) {
+    setupSpreadsheetStructure();
+    arrSheet = ss.getSheetByName("ArrivalOperations");
+  }
+  
+  let arrival = [];
+  if (arrSheet && arrSheet.getLastRow() > 1) {
+    const numRows = arrSheet.getLastRow() - 1;
+    const numCols = Math.max(arrSheet.getLastColumn(), 6); // Ensure at least 6 columns (Ground Handling, No Flight, Origin, BCB No, Parking Stand, AIBT)
+    const arrRows = arrSheet.getRange(2, 1, numRows, numCols).getValues();
+    
+    arrival = arrRows.map((r, idx) => ({
+      id: idx + 2,
+      type: 'ARRIVAL',
+      groundHandling: String(r[0] || '').trim(),
+      noFlight: String(r[1] || '').trim(),
+      origin: String(r[2] || '').trim(),
+      bcbNo: String(r[3] || '').trim(),
+      parkingStand: String(r[4] || '').trim(),
+      // Handle Date objects or string formats for AIBT cleanly
+      aibt: formatCellTime_(r[5])
+    })).filter(item => item.noFlight !== '');
+  }
+
+  // Get Departure Data
+  let depSheet = ss.getSheetByName("DepartureOperations");
+  if (!depSheet) {
+    setupSpreadsheetStructure();
+    depSheet = ss.getSheetByName("DepartureOperations");
+  }
+
+  let departure = [];
+  if (depSheet && depSheet.getLastRow() > 1) {
+    const numRows = depSheet.getLastRow() - 1;
+    const numCols = Math.max(depSheet.getLastColumn(), 8);
+    const depRows = depSheet.getRange(2, 1, numRows, numCols).getValues();
+    
+    departure = depRows.map((r, idx) => ({
+      id: idx + 2,
+      type: 'DEPARTURE',
+      desk: String(r[0] || '').trim(),
+      maskapai: String(r[1] || '').trim(),
+      flightNo: String(r[2] || '').trim(),
+      dos: String(r[3] || '').trim(),
+      tipePesawat: String(r[4] || '').trim(),
+      jamBuka: formatCellTime_(r[5]),
+      jamTutup: formatCellTime_(r[6]),
+      std: formatCellTime_(r[7])
+    })).filter(item => item.flightNo !== '');
+  }
+
+  return { arrival: arrival, departure: departure };
+}
+
+/**
+ * Helper to safely format Date objects or time strings coming from Google Sheets.
+ */
+function formatCellTime_(val) {
+  if (!val) return '';
+  if (val instanceof Date) {
+    const hrs = String(val.getHours()).padStart(2, '0');
+    const mins = String(val.getMinutes()).padStart(2, '0');
+    // If it's Jan 1 1899 default time or regular time
+    return `${hrs}:${mins}`;
+  }
+  return String(val).trim();
+}
+
+function saveFlightData(record) {
+  const ss = getActiveSpreadsheet_();
+  
+  if (record.type === 'ARRIVAL') {
+    let sheet = ss.getSheetByName("ArrivalOperations");
+    if (!sheet) {
+      setupSpreadsheetStructure();
+      sheet = ss.getSheetByName("ArrivalOperations");
+    }
+    const values = [
+      record.groundHandling || '',
+      record.noFlight || '',
+      record.origin || '',
+      record.bcbNo || '',
+      record.parkingStand || '',
+      record.aibt || ''
+    ];
+    if (record.id && Number(record.id) > 1) {
+      sheet.getRange(Number(record.id), 1, 1, values.length).setValues([values]);
+    } else {
+      sheet.appendRow(values);
+    }
+    return { status: 'success', message: 'Data Kedatangan berhasil disimpan.' };
+  } else {
+    let sheet = ss.getSheetByName("DepartureOperations");
+    if (!sheet) {
+      setupSpreadsheetStructure();
+      sheet = ss.getSheetByName("DepartureOperations");
+    }
+    const values = [
+      record.desk || '',
+      record.maskapai || '',
+      record.flightNo || '',
+      record.dos || '',
+      record.tipePesawat || '',
+      record.jamBuka || '',
+      record.jamTutup || '',
+      record.std || ''
+    ];
+    if (record.id && Number(record.id) > 1) {
+      sheet.getRange(Number(record.id), 1, 1, values.length).setValues([values]);
+    } else {
+      sheet.appendRow(values);
+    }
+    return { status: 'success', message: 'Data Keberangkatan berhasil disimpan.' };
+  }
+}
+
+function deleteFlightData(type, id) {
+  const ss = getActiveSpreadsheet_();
+  const sheetName = type === 'ARRIVAL' ? "ArrivalOperations" : "DepartureOperations";
+  const sheet = ss.getSheetByName(sheetName);
+  if (!sheet) return { status: 'error', message: 'Sheet tidak ditemukan.' };
+
+  const rowNum = Number(id);
+  if (rowNum > 1 && rowNum <= sheet.getLastRow()) {
+    sheet.deleteRow(rowNum);
+    return { status: 'success', message: 'Data berhasil dihapus.' };
+  }
+  return { status: 'error', message: 'Baris data tidak valid.' };
+}
