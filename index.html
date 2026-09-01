@@ -19,12 +19,19 @@
             darkMode: 'class',
             theme: {
                 extend: {
-                    colors: { slate: { 925: '#0b0f19', 950: '#070a12' } },
+                    colors: {
+                        slate: {
+                            925: '#0b0f19',
+                            950: '#070a12',
+                        }
+                    },
                     fontFamily: {
                         sans: ['Plus Jakarta Sans', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
                         mono: ['JetBrains Mono', 'monospace'],
                     },
-                    spacing: { 'safe-bottom': 'env(safe-area-inset-bottom)' }
+                    spacing: {
+                        'safe-bottom': 'env(safe-area-inset-bottom)',
+                    }
                 }
             }
         }
@@ -37,11 +44,16 @@
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
             -webkit-tap-highlight-color: transparent;
-            overscroll-behavior-y: none;
-            user-select: none;
+            overscroll-behavior-y: none; /* Mencegah pull-to-refresh di Chrome/Safari Mobile */
+            user-select: none; /* Mencegah seleksi teks secara tidak sengaja */
         }
-        input, textarea { user-select: auto; }
-        
+
+        /* Mengizinkan seleksi teks hanya pada input */
+        input, textarea {
+            user-select: auto;
+        }
+
+        /* Menyembunyikan scrollbar agar terasa seperti Native App */
         ::-webkit-scrollbar { width: 0px; background: transparent; display: none; }
         * { scrollbar-width: none; }
         
@@ -61,6 +73,7 @@
             to { opacity: 1; transform: translateY(0); }
         }
         .animate-fade { animation: fadeIn 0.2s ease-out forwards; }
+
         @keyframes shrinkProgress {
             from { width: 100%; }
             to { width: 0%; }
@@ -69,8 +82,10 @@
     </style>
 </head>
 
+<!-- Layout fixed agar aplikasi tidak scrollable secara global, persis seperti Native App -->
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 fixed inset-0 flex flex-col antialiased">
 
+    <!-- Header Atas -->
     <header class="glass-header border-b border-slate-200/80 dark:border-slate-800/80 z-30 px-4 py-3 flex justify-between items-center gap-2 flex-shrink-0 pt-[calc(env(safe-area-inset-top)+0.75rem)]">
         <div class="flex items-center gap-2.5 flex-1 min-w-0">
             <div class="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold shadow-md shadow-blue-600/20 flex-shrink-0">
@@ -83,10 +98,12 @@
         </div>
 
         <div class="flex items-center gap-2 flex-shrink-0">
+            <!-- Waktu Server / Jam -->
             <div class="bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-2 py-1.5 rounded-lg flex items-center gap-1.5">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                 <span id="currentTime" class="text-xs font-mono font-bold tracking-wider text-slate-700 dark:text-slate-300">00:00</span>
             </div>
+
             <button onclick="loadData()" title="Sinkronisasi" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs transition-colors active:scale-95">
                 <i class="fa-solid fa-rotate-right"></i>
             </button>
@@ -108,16 +125,23 @@
                 <i class="fa-solid fa-circle-xmark"></i>
             </button>
         </div>
+
+        <!-- Filter Status Horizontal Scroll -->
         <div class="flex items-center gap-2 overflow-x-auto scroll-smooth w-full pb-1" id="statusFilterTabs">
             <!-- Filter dinamis dirender via JS -->
         </div>
     </div>
 
+    <!-- min-h-0 penting agar flex tidak melebihi viewport, overflow-y-auto membatasi scroll di area ini -->
     <main class="flex-1 min-h-0 relative bg-slate-50 dark:bg-slate-950">
+        
+        <!-- Loading Indicator -->
         <div id="loadingOverlay" class="absolute inset-0 bg-slate-50/80 dark:bg-slate-950/80 backdrop-blur-sm z-20 flex flex-col items-center justify-center">
             <div class="w-8 h-8 border-3 border-blue-200 dark:border-blue-900 border-t-blue-600 rounded-full animate-spin"></div>
             <p class="text-xs font-semibold text-slate-600 dark:text-slate-300 mt-3">Sinkronisasi data...</p>
         </div>
+
+        <!-- Empty State -->
         <div id="emptyState" class="hidden absolute inset-0 z-10 flex flex-col items-center justify-center text-slate-400 p-6 text-center">
             <div class="w-16 h-16 mb-4 rounded-full bg-slate-200/50 dark:bg-slate-800/50 flex items-center justify-center text-slate-400 dark:text-slate-500">
                 <i class="fa-solid fa-inbox text-2xl"></i>
@@ -125,19 +149,25 @@
             <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300">Tidak Ada Data</h3>
             <p class="text-xs text-slate-500 mt-1 max-w-[220px]">Tidak ada penerbangan yang sesuai dengan filter atau pencarian Anda.</p>
         </div>
+
+        <!-- Card List Container -->
         <div id="mobileCardList" class="h-full overflow-y-auto px-4 py-3 space-y-3 pb-24">
             <!-- Data penerbangan dimuat di sini -->
         </div>
+
     </main>
 
+    
+    <!-- Tombol FAB untuk Tambah Data -->
     <button onclick="openModal()" class="fixed bottom-24 right-5 z-40 w-14 h-14 bg-blue-600 active:bg-blue-700 text-white rounded-full shadow-[0_8px_16px_rgba(37,99,235,0.4)] flex items-center justify-center transition-transform transform active:scale-95">
         <i class="fa-solid fa-plus text-xl"></i>
     </button>
 
+    <!-- Navigasi Bawah ala Mobile App -->
     <nav class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex-shrink-0 z-30 pb-[env(safe-area-inset-bottom)]">
         <div class="flex items-center justify-around h-16 px-2">
             <button onclick="setMasterType('ARRIVAL')" id="navArrival" class="flex-1 h-full flex flex-col items-center justify-center gap-1 text-blue-600 dark:text-blue-500">
-                <i class="fa-solid fa-plane-arrival text-lg mb-0.5 transform -translate-y-1 transition-transform"></i>
+                <i class="fa-solid fa-plane-arrival text-lg mb-0.5"></i>
                 <span class="text-[10px] font-bold">Kedatangan</span>
             </button>
             <button onclick="setMasterType('DEPARTURE')" id="navDeparture" class="flex-1 h-full flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
@@ -149,20 +179,31 @@
 
     <div id="modalBackdrop" onclick="closeModal()" class="hidden fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 transition-opacity opacity-0"></div>
     <div id="formModal" class="hidden fixed inset-x-0 bottom-0 z-50 transform translate-y-full transition-transform duration-300 ease-out">
+        <!-- Struktur Bottom Sheet -->
         <div class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 rounded-t-3xl shadow-2xl flex flex-col max-h-[88vh] pb-[env(safe-area-inset-bottom)]">
+            
+            <!-- Drag Handle Indikator -->
             <div class="w-full flex justify-center pt-3 pb-2" onclick="closeModal()">
                 <div class="w-12 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-full"></div>
             </div>
+
+            <!-- Header Form -->
             <div class="flex items-center justify-between px-5 pb-3 border-b border-slate-100 dark:border-slate-800 flex-shrink-0">
                 <h3 id="modalTitleText" class="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
                     <i class="fa-solid fa-pen-to-square text-blue-600"></i>
                     <span id="modalHeaderLabel">Entri Kedatangan</span>
                 </h3>
             </div>
+
+            <!-- Form Content (Bisa di-scroll jika isinya panjang) -->
             <div class="p-5 overflow-y-auto scroll-smooth flex-1">
                 <form id="flightForm" onsubmit="event.preventDefault(); saveData();" class="space-y-4">
                     <input type="hidden" id="recordId">
-                    <div id="dynamicFormFields" class="space-y-4"></div>
+                    
+                    <div id="dynamicFormFields" class="space-y-4">
+                        <!-- Field dirender dari JS -->
+                    </div>
+
                     <div class="pt-4 pb-2">
                         <button type="submit" id="btnSave" class="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2 transition-transform active:scale-95">
                             <span id="btnSaveSpinner" class="hidden w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
@@ -194,6 +235,7 @@
         </div>
     </div>
 
+    <!-- Toast diletakkan di bagian atas pada mobile agar tidak tertutup keyboard atau bottom nav -->
     <div id="toast" class="fixed top-4 inset-x-4 z-[60] transition-all duration-300 transform -translate-y-24 opacity-0 pointer-events-none">
         <div class="bg-slate-900 dark:bg-white text-white dark:text-slate-900 p-3 rounded-xl shadow-lg flex items-center gap-3 relative overflow-hidden pointer-events-auto max-w-sm mx-auto">
             <div id="toastIcon" class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-white bg-emerald-500 text-sm">
@@ -208,11 +250,16 @@
     </div>
 
     <script>
-        let masterType = 'ARRIVAL';
+        // --- KONFIGURASI DATABASE GOOGLE APPS SCRIPT ---
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz4ccLBjbAqr3ARvsi2Aub8wdcSOKmiMgnpCXrWyGyTfQ2o3HxwilHRD-yPmBzUvf3i/exec';
+
+        let masterType = 'ARRIVAL'; // 'ARRIVAL' or 'DEPARTURE'
         let arrivalDataCache = [];
         let departureDataCache = [];
         let filteredData = [];
         let activeStatusFilter = 'ALL';
+
+        // Efek Suara
         let synth;
         try { synth = new Tone.Synth().toDestination(); } catch(e) {}
 
@@ -228,9 +275,11 @@
             updateClock();
             setInterval(updateClock, 1000);
             loadData();
+            // Auto reload tiap 30 detik (silent)
             setInterval(() => loadData(true), 30000);
         });
 
+        // Menampilkan Jam Real-Time
         function updateClock() {
             const now = new Date();
             const hrs = String(now.getHours()).padStart(2, '0');
@@ -238,11 +287,13 @@
             const clockEl = document.getElementById('currentTime');
             if (clockEl) clockEl.innerText = `${hrs}:${mins}`;
             
+            // Re-render filtering status setiap awal menit
             if (now.getSeconds() === 0 && (arrivalDataCache.length > 0 || departureDataCache.length > 0)) {
                 applyFilteringAndSorting();
             }
         }
 
+        // Navigasi Bottom Tab
         function setMasterType(type) {
             masterType = type;
             activeStatusFilter = 'ALL';
@@ -254,23 +305,29 @@
             if (masterType === 'ARRIVAL') {
                 navArr.className = "flex-1 h-full flex flex-col items-center justify-center gap-1 text-blue-600 dark:text-blue-500 font-bold transition-all";
                 navArr.innerHTML = `<i class="fa-solid fa-plane-arrival text-xl mb-0.5 transform -translate-y-1 transition-transform"></i><span class="text-[10px]">Kedatangan</span>`;
+                
                 navDep.className = "flex-1 h-full flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 font-semibold transition-all";
                 navDep.innerHTML = `<i class="fa-solid fa-plane-departure text-lg mb-0.5"></i><span class="text-[10px]">Keberangkatan</span>`;
+                
                 if (headerSub) headerSub.innerText = 'Kedatangan (Arrival)';
             } else {
                 navDep.className = "flex-1 h-full flex flex-col items-center justify-center gap-1 text-blue-600 dark:text-blue-500 font-bold transition-all";
                 navDep.innerHTML = `<i class="fa-solid fa-plane-departure text-xl mb-0.5 transform -translate-y-1 transition-transform"></i><span class="text-[10px]">Keberangkatan</span>`;
+                
                 navArr.className = "flex-1 h-full flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 font-semibold transition-all";
                 navArr.innerHTML = `<i class="fa-solid fa-plane-arrival text-lg mb-0.5"></i><span class="text-[10px]">Kedatangan</span>`;
+                
                 if (headerSub) headerSub.innerText = 'Keberangkatan (Departure)';
             }
 
             document.getElementById('searchInput').value = '';
             document.getElementById('clearSearchBtn').classList.add('hidden');
+
             renderFilterTabs();
             applyFilteringAndSorting();
         }
 
+        // Render Status Tabs (Kapsul Filter)
         function renderFilterTabs() {
             const container = document.getElementById('statusFilterTabs');
             if (!container) return;
@@ -293,7 +350,7 @@
                         Semua <span id="badgeCountALL" class="ml-1 opacity-75 font-mono text-[10px]">0</span>
                     </button>
                     <button onclick="setStatusFilter('OPEN')" data-tab="OPEN" class="tab-btn px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 transition-colors">
-                        Open <span id="badgeCountOPEN" class="ml-1 opacity-75 font-mono text-[10px]">0</span>
+                        Check-in Open <span id="badgeCountOPEN" class="ml-1 opacity-75 font-mono text-[10px]">0</span>
                     </button>
                     <button onclick="setStatusFilter('BOARDING')" data-tab="BOARDING" class="tab-btn px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 transition-colors">
                         Boarding <span id="badgeCountBOARDING" class="ml-1 opacity-75 font-mono text-[10px]">0</span>
@@ -305,42 +362,31 @@
             }
         }
 
+        // Mengambil Data dari API Google Script
         function loadData(isSilent = false) {
             const overlay = document.getElementById('loadingOverlay');
             if (!isSilent && overlay) overlay.classList.remove('hidden');
             
-            if (typeof google !== 'undefined' && google.script && google.script.run) {
-                google.script.run
-                    .withSuccessHandler(data => onDataLoaded(data, isSilent))
-                    .withFailureHandler(err => onDataLoadError(err, isSilent))
-                    .getAllFlightOpsData();
-            } else {
-                setTimeout(() => {
-                    const now = new Date();
-                    const fmt = (d) => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-                    const addMins = (m) => new Date(now.getTime() + m * 60000);
-
-                    const mockArr = [
-                        {id: 1, type: 'ARRIVAL', groundHandling: 'GAPURA', noFlight: 'GA 183', origin: 'KNO', bcbNo: 'BCB-001', parkingStand: 'B3', aibt: fmt(addMins(-15))},
-                        {id: 2, type: 'ARRIVAL', groundHandling: 'JAS', noFlight: 'SQ 950', origin: 'SIN', bcbNo: '-', parkingStand: 'A2', aibt: ''}
-                    ];
-                    
-                    const mockDep = [
-                        { id: 101, type: 'DEPARTURE', desk: 'D10-D12', maskapai: 'Garuda Indonesia', flightNo: 'GA 182', dos: 'CGK-KNO', tipePesawat: 'B737-800', jamBuka: fmt(addMins(-150)), jamTutup: fmt(addMins(-20)), std: fmt(addMins(20)) },
-                        { id: 102, type: 'DEPARTURE', desk: 'E01-E04', maskapai: 'Batik Air', flightNo: 'ID 6872', dos: 'CGK-DPS', tipePesawat: 'A320', jamBuka: fmt(addMins(-50)), jamTutup: fmt(addMins(15)), std: fmt(addMins(55)) }
-                    ];
-                    onDataLoaded({ arrival: mockArr, departure: mockDep }, isSilent);
-                }, 600);
-            }
+            // Fetch dengan param action=read
+            fetch(SCRIPT_URL + "?action=read")
+                .then(response => {
+                    if (!response.ok) throw new Error("Terjadi kesalahan jaringan.");
+                    return response.json();
+                })
+                .then(data => onDataLoaded(data, isSilent))
+                .catch(err => onDataLoadError(err, isSilent));
         }
 
         function onDataLoaded(res, isSilent) {
             arrivalDataCache = res.arrival || [];
             departureDataCache = res.departure || [];
+            
+            // Render jika pertama kali load (bukan interval diam-diam)
             if (!document.getElementById('statusFilterTabs').innerHTML.trim()) {
                 renderFilterTabs();
             }
             applyFilteringAndSorting();
+            
             const overlay = document.getElementById('loadingOverlay');
             if (!isSilent && overlay) overlay.classList.add('hidden');
         }
@@ -366,18 +412,53 @@
                 const tutup = timeToMinutes(item.jamTutup);
                 const departure = timeToMinutes(item.std);
 
+                // Perhitungan Counter Buka (berjalan 3 jam)
                 if (buka !== -1 && tutup !== -1 && cur >= buka && cur <= tutup) {
                     const sisaMenit = tutup - cur;
-                    return { key: 'OPEN', label: 'OPEN', bg: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/60', dot: 'bg-emerald-500 animate-pulse', info: `Tutup dlm ${sisaMenit}m`, priority: 1 };
+                    return { 
+                        key: 'OPEN', 
+                        label: 'OPEN', 
+                        bg: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/60', 
+                        dot: 'bg-emerald-500 animate-pulse', 
+                        info: `Tutup dlm ${sisaMenit}m`, 
+                        priority: 1 
+                    };
                 }
+
+                // Setelah Tutup, menuju STD
                 if (tutup !== -1 && cur > tutup && (departure === -1 || cur <= departure)) {
-                    return { key: 'BOARDING', label: 'BOARDING', bg: 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 border-amber-200 dark:border-amber-800/60', dot: 'bg-amber-500', info: 'Counter Tutup', priority: 2 };
+                    return { 
+                        key: 'BOARDING', 
+                        label: 'BOARDING', 
+                        bg: 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 border-amber-200 dark:border-amber-800/60', 
+                        dot: 'bg-amber-500', 
+                        info: 'Counter Tutup', 
+                        priority: 2 
+                    };
                 }
+
+                // Lewat dari STD
                 if (departure !== -1 && cur > departure) {
-                    return { key: 'DEPARTED', label: 'DEPARTED', bg: 'bg-slate-200 text-slate-500 dark:bg-slate-800 dark:text-slate-400 border-slate-300 dark:border-slate-700', dot: 'bg-slate-400', info: 'Berangkat', priority: 4 };
+                    return { 
+                        key: 'DEPARTED', 
+                        label: 'DEPARTED', 
+                        bg: 'bg-slate-200 text-slate-500 dark:bg-slate-800 dark:text-slate-400 border-slate-300 dark:border-slate-700', 
+                        dot: 'bg-slate-400', 
+                        info: 'Berangkat', 
+                        priority: 4 
+                    };
                 }
+
+                // Belum waktunya buka
                 const sisaBuka = buka - cur;
-                return { key: 'UPCOMING', label: 'UPCOMING', bg: 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 border-blue-200 dark:border-blue-800/60', dot: 'bg-blue-500', info: (sisaBuka > 0) ? `Buka dlm ${sisaBuka}m` : `Buka ${item.jamBuka || '--:--'}`, priority: 3 };
+                return { 
+                    key: 'UPCOMING', 
+                    label: 'UPCOMING', 
+                    bg: 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 border-blue-200 dark:border-blue-800/60', 
+                    dot: 'bg-blue-500', 
+                    info: (sisaBuka > 0) ? `Buka dlm ${sisaBuka}m` : `Buka ${item.jamBuka || '--:--'}`, 
+                    priority: 3 
+                };
             }
         }
 
@@ -387,13 +468,14 @@
             return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
         }
 
+        // Otomatis Hitung Buka & Tutup Counter dari STD
         function autoCalculateDepTimes(stdVal) {
             if (!stdVal) return;
             let val = stdVal.trim();
+            // Dukungan format cepat, misal "0645" menjadi "06:45"
             if (val.length === 4 && !val.includes(':') && !isNaN(val)) {
                 val = val.substring(0, 2) + ':' + val.substring(2);
-                const stdInput = document.getElementById('dep-std');
-                if (stdInput) stdInput.value = val;
+                document.getElementById('dep-std').value = val;
             }
             if (/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(val)) {
                 const parts = val.split(':');
@@ -401,21 +483,22 @@
                 const mins = parseInt(parts[1], 10);
                 const totalMins = hours * 60 + mins;
 
+                // Open: -3 Jam (180 menit)
                 let openMins = (totalMins - 180 + 1440) % 1440;
                 let openH = String(Math.floor(openMins / 60)).padStart(2, '0');
                 let openM = String(openMins % 60).padStart(2, '0');
 
+                // Close: -40 Menit
                 let closeMins = (totalMins - 40 + 1440) % 1440;
                 let closeH = String(Math.floor(closeMins / 60)).padStart(2, '0');
                 let closeM = String(closeMins % 60).padStart(2, '0');
 
-                const bukaInput = document.getElementById('dep-jamBuka');
-                const tutupInput = document.getElementById('dep-jamTutup');
-                if (bukaInput) bukaInput.value = `${openH}:${openM}`;
-                if (tutupInput) tutupInput.value = `${closeH}:${closeM}`;
+                document.getElementById('dep-jamBuka').value = `${openH}:${openM}`;
+                document.getElementById('dep-jamTutup').value = `${closeH}:${closeM}`;
             }
         }
 
+        // Handle Filter
         function setStatusFilter(statusKey) {
             activeStatusFilter = statusKey;
             document.querySelectorAll('#statusFilterTabs button').forEach(btn => {
@@ -433,7 +516,6 @@
             document.getElementById('clearSearchBtn').classList.toggle('hidden', val === '');
             applyFilteringAndSorting();
         }
-
         function clearSearch() {
             document.getElementById('searchInput').value = '';
             document.getElementById('clearSearchBtn').classList.add('hidden');
@@ -442,6 +524,8 @@
 
         function applyFilteringAndSorting() {
             const currentList = masterType === 'ARRIVAL' ? arrivalDataCache : departureDataCache;
+            
+            // Hitung lencana filter
             const counts = { ALL: currentList.length };
             currentList.forEach(item => {
                 const st = calculateFlightStatus(item).key;
@@ -465,7 +549,9 @@
                 return true;
             });
 
+            // Urutkan berdasarkan prioritas status
             filteredData.sort((a, b) => calculateFlightStatus(a).priority - calculateFlightStatus(b).priority);
+
             renderMobileCards();
         }
 
@@ -488,6 +574,7 @@
                 const card = document.createElement('div');
                 card.className = "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm transition-transform active:scale-[0.98]";
                 
+                // Ekspansi Kartu
                 card.onclick = () => {
                     const detail = document.getElementById(`card-detail-${row.id}`);
                     if(detail) detail.classList.toggle('hidden');
@@ -515,6 +602,8 @@
                                 <span class="font-mono font-extrabold text-sm text-slate-900 dark:text-white">${row.aibt || '--:--'}</span>
                             </div>
                         </div>
+                        
+                        <!-- Rincian Tersembunyi (Expandable) -->
                         <div id="card-detail-${row.id}" class="hidden mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 animate-fade">
                             <div class="flex flex-col gap-2 mb-3">
                                 <div class="bg-slate-50 dark:bg-slate-950/50 p-2.5 rounded-xl text-xs flex justify-between items-center border border-slate-100 dark:border-slate-800/80">
@@ -557,6 +646,8 @@
                                 <span class="font-mono font-extrabold text-sm text-slate-900 dark:text-white">${row.std || '--:--'}</span>
                             </div>
                         </div>
+                        
+                        <!-- Rincian Tersembunyi (Expandable) -->
                         <div id="card-detail-${row.id}" class="hidden mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 animate-fade">
                             <div class="grid grid-cols-2 gap-2 mb-3">
                                 <div class="bg-slate-50 dark:bg-slate-950/50 p-2.5 rounded-xl text-[10px] flex flex-col gap-1 border border-slate-100 dark:border-slate-800/80">
@@ -579,6 +670,7 @@
                         </div>
                     `;
                 }
+
                 container.appendChild(card);
             });
         }
@@ -626,6 +718,7 @@
                         </div>
                     </div>
                 `;
+
                 if (record) {
                     document.getElementById('recordId').value = record.id;
                     document.getElementById('arr-groundHandling').value = record.groundHandling || '';
@@ -664,6 +757,7 @@
                             </div>
                         </div>
                         
+                        <!-- Block Jam Otomatis -->
                         <div class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 rounded-xl">
                             <div class="mb-3">
                                 <label class="block text-xs font-bold text-blue-600 dark:text-blue-400 mb-1.5 text-center">Jadwal Keberangkatan (STD)</label>
@@ -682,6 +776,7 @@
                         </div>
                     </div>
                 `;
+
                 if (record) {
                     document.getElementById('recordId').value = record.id;
                     document.getElementById('dep-desk').value = record.desk || '';
@@ -695,11 +790,13 @@
                 }
             }
 
+            // Animasi memunculkan bottom sheet
             const backdrop = document.getElementById('modalBackdrop');
             const modal = document.getElementById('formModal');
             if (backdrop && modal) {
                 backdrop.classList.remove('hidden');
                 modal.classList.remove('hidden');
+                // Trigger reflow
                 void modal.offsetWidth; 
                 backdrop.classList.remove('opacity-0');
                 modal.classList.remove('translate-y-full');
@@ -714,6 +811,7 @@
             backdrop.classList.add('opacity-0');
             modal.classList.add('translate-y-full');
             
+            // Tunggu animasi CSS selesai
             setTimeout(() => {
                 backdrop.classList.add('hidden');
                 modal.classList.add('hidden');
@@ -752,141 +850,18 @@
             btnText.innerText = 'Menyimpan...';
             spinner.classList.remove('hidden');
 
-            if (typeof google !== 'undefined' && google.script && google.script.run) {
-                google.script.run
-                    .withSuccessHandler(res => {
-                        resetFormBtn();
-                        closeModal();
-                        showToast('Tersimpan', res.message || 'Data berhasil disimpan.', 'success');
-                        playChime('success');
-                        loadData();
-                    })
-                    .withFailureHandler(err => {
-                        resetFormBtn();
-                        showToast('Gagal', err.toString(), 'error');
-                        playChime('error');
-                    })
-                    .saveFlightData(record);
-            } else {
-                setTimeout(() => {
-                    resetFormBtn();
-                    closeModal();
-                    showToast('Tersimpan', 'Data berhasil diperbarui.', 'success');
-                    playChime('success');
-                    loadData();
-                }, 800);
-            }
-
-            function resetFormBtn() {
-                btnSave.disabled = false;
-                btnText.innerText = 'Simpan Data';
-                spinner.classList.add('hidden');
-            }
-        }
-
-        let pendingDeleteId = null;
-        function confirmDeleteFlight(id, flightNo) {
-            pendingDeleteId = id;
-            document.getElementById('deleteFlightNoTarget').innerText = flightNo;
-            
-            const backdrop = document.getElementById('deleteModalBackdrop');
-            const modal = document.getElementById('deleteModal');
-            
-            backdrop.classList.remove('hidden');
-            modal.classList.remove('hidden');
-            void modal.offsetWidth;
-            backdrop.classList.remove('opacity-0');
-        }
-
-        function closeDeleteModal() {
-            const backdrop = document.getElementById('deleteModalBackdrop');
-            backdrop.classList.add('opacity-0');
-            
-            setTimeout(() => {
-                backdrop.classList.add('hidden');
-                document.getElementById('deleteModal').classList.add('hidden');
-                pendingDeleteId = null;
-            }, 200);
-        }
-
-        function executeDeleteFlight() {
-            if (!pendingDeleteId) return;
-
-            const btnConfirm = document.getElementById('btnConfirmDelete');
-            const btnText = document.getElementById('btnDeleteText');
-            const spinner = document.getElementById('btnDeleteSpinner');
-
-            btnConfirm.disabled = true;
-            btnText.innerText = 'Menghapus...';
-            spinner.classList.remove('hidden');
-
-            if (typeof google !== 'undefined' && google.script && google.script.run) {
-                google.script.run
-                    .withSuccessHandler(res => {
-                        finishDelete();
-                        showToast('Dihapus', 'Data penerbangan berhasil dihapus.', 'success');
-                        playChime('success');
-                        loadData();
-                    })
-                    .withFailureHandler(err => {
-                        finishDelete();
-                        showToast('Gagal', err.toString(), 'error');
-                        playChime('error');
-                    })
-                    .deleteFlightData(masterType, pendingDeleteId);
-            } else {
-                setTimeout(() => {
-                    finishDelete();
-                    showToast('Dihapus', 'Data penerbangan berhasil dihapus.', 'success');
-                    playChime('success');
-                    loadData();
-                }, 600);
-            }
-
-            function finishDelete() {
-                btnConfirm.disabled = false;
-                btnText.innerText = 'Ya, Hapus';
-                spinner.classList.add('hidden');
-                closeDeleteModal();
-            }
-        }
-
-        function toggleTheme() {
-            document.documentElement.classList.toggle('dark');
-            const icon = document.getElementById('themeIcon');
-            if (icon) {
-                icon.className = document.documentElement.classList.contains('dark') ? "fa-solid fa-sun text-amber-400" : "fa-solid fa-moon";
-            }
-        }
-
-        let toastTimer;
-        function showToast(title, message, type = 'success') {
-            const toast = document.getElementById('toast');
-            const iconBox = document.getElementById('toastIcon');
-            const progressBar = document.getElementById('toastProgressBar');
-            
-            document.getElementById('toastTitle').innerText = title;
-            document.getElementById('toastMessage').innerText = message;
-
-            clearTimeout(toastTimer);
-            toast.classList.remove('-translate-y-24', 'opacity-0');
-            progressBar.classList.remove('animate-toast-bar');
-            void progressBar.offsetWidth;
-
-            if (type === 'success') {
-                iconBox.innerHTML = '<i class="fa-solid fa-check"></i>';
-                iconBox.className = "flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-white bg-emerald-500 text-sm";
-                progressBar.className = "absolute bottom-0 left-0 h-1 bg-emerald-500 animate-toast-bar";
-            } else if (type === 'error') {
-                iconBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
-                iconBox.className = "flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-white bg-rose-500 text-sm";
-                progressBar.className = "absolute bottom-0 left-0 h-1 bg-rose-500 animate-toast-bar";
-            }
-
-            toastTimer = setTimeout(() => {
-                toast.classList.add('-translate-y-24', 'opacity-0');
-            }, 3500);
-        }
-    </script>
-</body>
-</html>
+            // Kirim data via POST ke Google Script
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'text/plain;charset=utf-8', // Hindari error CORS Preflight
+                },
+                body: JSON.stringify({
+                    action: 'save',
+                    data: record
+                })
+            })
+            .then(response => response.json())
+            .then(res => {
+                resetFormBtn();
+                closeModal();
