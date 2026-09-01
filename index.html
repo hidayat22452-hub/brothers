@@ -2,29 +2,6 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Koneksi Database</title>
-</head>
-<body>
-    <div id="data-container">Memuat data...</div>
-
-    <script>
-        // Ganti dengan URL Web App Apps Script Anda
-        const urlAPI = "https://script.google.com/macros/s/AKfycbz4ccLBjbAqr3ARvsi2Aub8wdcSOKmiMgnpCXrWyGyTfQ2o3HxwilHRD-yPmBzUvf3i/exec"; 
-
-        fetch(urlAPI)
-            .then(response => response.json())
-            .then(data => {
-                console.log(data);
-                // Proses data dan tampilkan ke HTML di sini
-                document.getElementById('data-container').innerText = JSON.stringify(data);
-            })
-            .catch(error => console.error('Error:', error));
-    </script>
-</body>
-</html>
-<html lang="id" class="h-full">
-<head>
-    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
     <!-- PWA / Web App Capabilities -->
@@ -33,10 +10,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="FlightOps">
-    <link rel="apple-touch-icon" href="https://ui-avatars.com/api/?name=F+O&background=2563eb&color=fff&size=512">
-    <link rel="manifest" href='data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22FlightOps%20System%22%2C%22short_name%22%3A%22FlightOps%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23070a12%22%2C%22theme_color%22%3A%22%232563eb%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fui-avatars.com%2Fapi%2F%3Fname%3DF%2BO%26background%3D2563eb%26color%3Dfff%26size%3D512%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D'>
     
-    <title>FlightOps - Smartphone & PC Edition</title>
+    <title>FlightOps Hub</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -44,39 +19,31 @@
             darkMode: 'class',
             theme: {
                 extend: {
-                    colors: {
-                        slate: {
-                            925: '#0b0f19',
-                            950: '#070a12',
-                        }
-                    },
+                    colors: { slate: { 925: '#0b0f19', 950: '#070a12' } },
                     fontFamily: {
                         sans: ['Plus Jakarta Sans', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
                         mono: ['JetBrains Mono', 'monospace'],
-                    }
+                    },
+                    spacing: { 'safe-bottom': 'env(safe-area-inset-bottom)' }
                 }
             }
         }
     </script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
 
     <style>
-        html, body {
-            width: 100%;
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            overflow-x: hidden;
-            box-sizing: border-box;
-            font-family: 'Plus Jakarta Sans', sans-serif;
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
             -webkit-tap-highlight-color: transparent;
+            overscroll-behavior-y: none;
+            user-select: none;
         }
-
-        *, *:before, *:after {
-            box-sizing: inherit;
-        }
+        input, textarea { user-select: auto; }
+        
+        ::-webkit-scrollbar { width: 0px; background: transparent; display: none; }
+        * { scrollbar-width: none; }
         
         .glass-header {
             background: rgba(255, 255, 255, 0.9);
@@ -89,235 +56,163 @@
             -webkit-backdrop-filter: blur(12px);
         }
 
-        ::-webkit-scrollbar { width: 4px; height: 4px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
-        .dark ::-webkit-scrollbar-thumb { background: #334155; }
-
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(4px); }
             to { opacity: 1; transform: translateY(0); }
         }
         .animate-fade { animation: fadeIn 0.2s ease-out forwards; }
-
         @keyframes shrinkProgress {
             from { width: 100%; }
             to { width: 0%; }
         }
         .animate-toast-bar { animation: shrinkProgress 3.5s linear forwards; }
-
-        .app-container {
-            transition: max-width 0.3s ease-in-out;
-        }
-
-        /* Dynamic UI Zoom Scale Wrapper */
-        #scalableWrapper {
-            transform-origin: top center;
-            transition: transform 0.2s ease;
-        }
     </style>
 </head>
-<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 flex flex-col antialiased font-sans selection:bg-blue-600 selection:text-white min-h-screen">
 
-    <header class="glass-header border-b border-slate-200/80 dark:border-slate-800/80 sticky top-0 z-30 px-3 py-2.5 flex justify-between items-center gap-2 w-full">
-        <div class="flex items-center gap-2 min-w-0">
-            <div class="w-8 h-8 rounded-xl bg-slate-900 dark:bg-blue-600 text-white flex items-center justify-center font-bold text-xs shadow-sm flex-shrink-0">
-                <i class="fa-solid fa-plane-circle-check text-xs"></i>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 fixed inset-0 flex flex-col antialiased">
+
+    <header class="glass-header border-b border-slate-200/80 dark:border-slate-800/80 z-30 px-4 py-3 flex justify-between items-center gap-2 flex-shrink-0 pt-[calc(env(safe-area-inset-top)+0.75rem)]">
+        <div class="flex items-center gap-2.5 flex-1 min-w-0">
+            <div class="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold shadow-md shadow-blue-600/20 flex-shrink-0">
+                <i class="fa-solid fa-plane-circle-check text-sm"></i>
             </div>
             <div class="min-w-0">
-                <h1 class="text-xs sm:text-sm font-extrabold tracking-tight text-slate-900 dark:text-white flex items-center gap-1.5 truncate">
-                    FlightOps Hub
-                    <span id="modeBadge" class="text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">MOBILE</span>
-                </h1>
-                <p class="text-[10px] text-slate-400 font-medium hidden xs:block">Real-time Airport Operations</p>
+                <h1 class="text-sm font-extrabold tracking-tight text-slate-900 dark:text-white truncate">FlightOps</h1>
+                <p id="headerSubtitle" class="text-[10px] text-slate-500 font-medium truncate">Kedatangan Aktif</p>
             </div>
         </div>
 
-        <div class="flex items-center gap-1.5 flex-shrink-0">
-            <!-- Screen Scale Selector Dropdown -->
-            <div class="relative">
-                <select id="scaleSelector" onchange="changeScreenScale(this.value)" class="bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-200 text-[11px] font-bold py-1.5 px-2 rounded-lg border border-slate-200 dark:border-slate-800 outline-none cursor-pointer">
-                    <option value="0.85">Scale: 85%</option>
-                    <option value="1.0" selected>Scale: 100%</option>
-                    <option value="1.15">Scale: 115%</option>
-                    <option value="1.25">Scale: 125%</option>
-                </select>
+        <div class="flex items-center gap-2 flex-shrink-0">
+            <div class="bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-2 py-1.5 rounded-lg flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span id="currentTime" class="text-xs font-mono font-bold tracking-wider text-slate-700 dark:text-slate-300">00:00</span>
             </div>
-
-            <!-- View Mode Toggle (Mobile vs PC) -->
-            <button onclick="toggleViewMode()" id="viewModeToggleBtn" title="Beralih Mode Tampilan" class="px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center gap-1.5 text-xs font-bold border border-slate-200 dark:border-slate-800 transition-colors">
-                <i id="viewModeIcon" class="fa-solid fa-desktop"></i>
-                <span id="viewModeText" class="hidden sm:inline">Mode PC</span>
-            </button>
-
-            <button onclick="loadData()" title="Sinkronkan" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs border border-slate-200 dark:border-slate-800 transition-colors">
+            <button onclick="loadData()" title="Sinkronisasi" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs transition-colors active:scale-95">
                 <i class="fa-solid fa-rotate-right"></i>
             </button>
-
-            <button onclick="toggleTheme()" title="Mode" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs border border-slate-200 dark:border-slate-800 transition-colors">
+            <button onclick="toggleTheme()" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs transition-colors active:scale-95">
                 <i id="themeIcon" class="fa-solid fa-moon"></i>
             </button>
-
-            <div class="bg-slate-900 dark:bg-slate-900 text-white border border-slate-800 px-2 py-1.5 rounded-lg flex items-center gap-1.5 shadow-xs">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                <span id="currentTime" class="text-[11px] font-mono font-bold tracking-wider">00:00:00</span>
-            </div>
         </div>
     </header>
 
-    <div id="scalableWrapper" class="flex-1 flex flex-col w-full">
-        <main id="appMainContainer" class="app-container flex-1 p-2.5 max-w-lg w-full mx-auto flex flex-col gap-2.5 overflow-hidden">
-
-            <!-- Master Type Selector (Arrival vs Departure Tabs) -->
-            <div class="grid grid-cols-2 gap-1.5 bg-slate-200/70 dark:bg-slate-900 p-1 rounded-xl border border-slate-300/60 dark:border-slate-800 w-full">
-                <button onclick="setMasterType('ARRIVAL')" id="masterTabArrival" class="py-2.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 bg-white dark:bg-blue-600 text-slate-900 dark:text-white shadow-xs">
-                    <i class="fa-solid fa-plane-arrival"></i>
-                    <span>Arrival</span>
-                </button>
-                <button onclick="setMasterType('DEPARTURE')" id="masterTabDeparture" class="py-2.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
-                    <i class="fa-solid fa-plane-departure"></i>
-                    <span>Departure</span>
-                </button>
+    <div class="px-4 py-3 bg-white dark:bg-slate-900 z-20 flex-shrink-0 border-b border-slate-200 dark:border-slate-800 shadow-sm">
+        <div class="relative w-full mb-3">
+            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                <i class="fa-solid fa-magnifying-glass text-xs"></i>
             </div>
+            <input type="text" id="searchInput" onkeyup="handleSearch()"
+                class="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white text-xs font-medium rounded-xl block w-full pl-9 pr-9 py-3 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder:text-slate-400" 
+                placeholder="Cari flight, rute, parking stand...">
+            <button id="clearSearchBtn" onclick="clearSearch()" class="hidden absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 active:text-slate-600">
+                <i class="fa-solid fa-circle-xmark"></i>
+            </button>
+        </div>
+        <div class="flex items-center gap-2 overflow-x-auto scroll-smooth w-full pb-1" id="statusFilterTabs">
+            <!-- Filter dinamis dirender via JS -->
+        </div>
+    </div>
 
-            <!-- Search & Quick Action Toolbar -->
-            <div class="bg-white dark:bg-slate-900 p-2.5 rounded-xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs flex flex-col gap-2 w-full">
-                <div class="flex items-center gap-2 w-full">
-                    <div class="relative flex-1 min-w-0">
-                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
-                            <i class="fa-solid fa-magnifying-glass text-xs"></i>
-                        </div>
-                        <input type="text" id="searchInput" onkeyup="handleSearch()"
-                            class="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white text-xs font-medium rounded-lg block w-full pl-8 pr-7 py-2.5 outline-none focus:border-blue-500 transition-colors placeholder:text-slate-400" 
-                            placeholder="Cari penerbangan...">
-                        <button id="clearSearchBtn" onclick="clearSearch()" class="hidden absolute inset-y-0 right-0 flex items-center pr-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-                            <i class="fa-solid fa-xmark text-xs"></i>
+    <main class="flex-1 min-h-0 relative bg-slate-50 dark:bg-slate-950">
+        <div id="loadingOverlay" class="absolute inset-0 bg-slate-50/80 dark:bg-slate-950/80 backdrop-blur-sm z-20 flex flex-col items-center justify-center">
+            <div class="w-8 h-8 border-3 border-blue-200 dark:border-blue-900 border-t-blue-600 rounded-full animate-spin"></div>
+            <p class="text-xs font-semibold text-slate-600 dark:text-slate-300 mt-3">Sinkronisasi data...</p>
+        </div>
+        <div id="emptyState" class="hidden absolute inset-0 z-10 flex flex-col items-center justify-center text-slate-400 p-6 text-center">
+            <div class="w-16 h-16 mb-4 rounded-full bg-slate-200/50 dark:bg-slate-800/50 flex items-center justify-center text-slate-400 dark:text-slate-500">
+                <i class="fa-solid fa-inbox text-2xl"></i>
+            </div>
+            <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300">Tidak Ada Data</h3>
+            <p class="text-xs text-slate-500 mt-1 max-w-[220px]">Tidak ada penerbangan yang sesuai dengan filter atau pencarian Anda.</p>
+        </div>
+        <div id="mobileCardList" class="h-full overflow-y-auto px-4 py-3 space-y-3 pb-24">
+            <!-- Data penerbangan dimuat di sini -->
+        </div>
+    </main>
+
+    <button onclick="openModal()" class="fixed bottom-24 right-5 z-40 w-14 h-14 bg-blue-600 active:bg-blue-700 text-white rounded-full shadow-[0_8px_16px_rgba(37,99,235,0.4)] flex items-center justify-center transition-transform transform active:scale-95">
+        <i class="fa-solid fa-plus text-xl"></i>
+    </button>
+
+    <nav class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex-shrink-0 z-30 pb-[env(safe-area-inset-bottom)]">
+        <div class="flex items-center justify-around h-16 px-2">
+            <button onclick="setMasterType('ARRIVAL')" id="navArrival" class="flex-1 h-full flex flex-col items-center justify-center gap-1 text-blue-600 dark:text-blue-500">
+                <i class="fa-solid fa-plane-arrival text-lg mb-0.5 transform -translate-y-1 transition-transform"></i>
+                <span class="text-[10px] font-bold">Kedatangan</span>
+            </button>
+            <button onclick="setMasterType('DEPARTURE')" id="navDeparture" class="flex-1 h-full flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
+                <i class="fa-solid fa-plane-departure text-lg mb-0.5"></i>
+                <span class="text-[10px] font-semibold">Keberangkatan</span>
+            </button>
+        </div>
+    </nav>
+
+    <div id="modalBackdrop" onclick="closeModal()" class="hidden fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 transition-opacity opacity-0"></div>
+    <div id="formModal" class="hidden fixed inset-x-0 bottom-0 z-50 transform translate-y-full transition-transform duration-300 ease-out">
+        <div class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 rounded-t-3xl shadow-2xl flex flex-col max-h-[88vh] pb-[env(safe-area-inset-bottom)]">
+            <div class="w-full flex justify-center pt-3 pb-2" onclick="closeModal()">
+                <div class="w-12 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-full"></div>
+            </div>
+            <div class="flex items-center justify-between px-5 pb-3 border-b border-slate-100 dark:border-slate-800 flex-shrink-0">
+                <h3 id="modalTitleText" class="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                    <i class="fa-solid fa-pen-to-square text-blue-600"></i>
+                    <span id="modalHeaderLabel">Entri Kedatangan</span>
+                </h3>
+            </div>
+            <div class="p-5 overflow-y-auto scroll-smooth flex-1">
+                <form id="flightForm" onsubmit="event.preventDefault(); saveData();" class="space-y-4">
+                    <input type="hidden" id="recordId">
+                    <div id="dynamicFormFields" class="space-y-4"></div>
+                    <div class="pt-4 pb-2">
+                        <button type="submit" id="btnSave" class="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2 transition-transform active:scale-95">
+                            <span id="btnSaveSpinner" class="hidden w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                            <span id="btnSaveText">Simpan Data</span>
                         </button>
                     </div>
-
-                    <button onclick="openModal()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-3.5 py-2.5 rounded-lg text-xs flex items-center gap-1.5 shadow-xs flex-shrink-0 transition-colors">
-                        <i class="fa-solid fa-plus text-xs"></i>
-                        <span id="btnAddText">Entri</span>
-                    </button>
-                </div>
-
-                <!-- Segmented Filter Tabs -->
-                <div class="flex items-center gap-1 overflow-x-auto scrollbar-none w-full pb-0.5" id="statusFilterTabs">
-                    <!-- Dynamically populated -->
-                </div>
+                </form>
             </div>
-
-            <div class="flex-1 flex flex-col overflow-hidden relative rounded-xl w-full">
-                
-                <div id="loadingOverlay" class="absolute inset-0 bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-xs z-20 flex flex-col items-center justify-center">
-                    <div class="w-8 h-8 border-3 border-blue-200 dark:border-blue-900 border-t-blue-600 rounded-full animate-spin"></div>
-                    <p id="loadingText" class="text-xs font-semibold text-slate-600 dark:text-slate-300 mt-2.5">Memuat data...</p>
-                </div>
-
-                <div id="emptyState" class="hidden absolute inset-0 z-10 flex flex-col items-center justify-center text-slate-400 p-6 text-center">
-                    <i class="fa-solid fa-plane-circle-exclamation text-2xl text-slate-300 dark:text-slate-700 mb-2"></i>
-                    <h3 class="text-xs font-bold text-slate-600 dark:text-slate-400">Tidak Ada Data</h3>
-                    <p class="text-[11px] text-slate-400 mt-0.5">Silakan tambahkan data baru atau sesuaikan pencarian.</p>
-                </div>
-
-                <!-- Mobile Card Stream -->
-                <div id="mobileCardList" class="overflow-y-auto flex-1 space-y-2.5 pb-2 w-full">
-                    <!-- Dynamically populated -->
-                </div>
-
-                <!-- PC Table View -->
-                <div id="pcTableView" class="hidden overflow-y-auto flex-1 bg-white dark:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs w-full">
-                    <table class="w-full text-left border-collapse">
-                        <thead id="pcTableHead" class="sticky top-0 bg-slate-100/95 dark:bg-slate-950/95 backdrop-blur-xs text-slate-500 dark:text-slate-400 uppercase text-[10px] font-bold tracking-wider border-b border-slate-200 dark:border-slate-800 z-10">
-                            <!-- Dynamically populated -->
-                        </thead>
-                        <tbody id="pcTableBody" class="divide-y divide-slate-100 dark:divide-slate-800/60 text-xs font-medium">
-                            <!-- Dynamically populated -->
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="bg-white dark:bg-slate-900 px-3.5 py-2.5 border-t border-slate-200/80 dark:border-slate-800/80 flex justify-between items-center text-[11px] text-slate-500 dark:text-slate-400 font-medium rounded-xl mt-2 shadow-xs w-full">
-                    <div class="flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                        <span id="totalDataCount">0 penerbangan</span>
-                    </div>
-                    <span class="text-[10px] text-slate-400" id="footerHint">Ketuk kartu untuk detail</span>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <div id="modalBackdrop" onclick="closeModal()" class="hidden fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-40 transition-opacity opacity-0"></div>
-    <div id="formModal" class="hidden fixed inset-x-0 bottom-0 z-50 transform transition-all duration-250">
-        <div class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 rounded-t-2xl shadow-xl p-4 max-h-[85vh] overflow-y-auto w-full">
-            
-            <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800 mb-3.5">
-                <h3 id="modalTitleText" class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                    <i class="fa-solid fa-pen-to-square text-blue-600 dark:text-blue-400 text-xs"></i>
-                    <span id="modalHeaderLabel">Entri Data</span>
-                </h3>
-                <button onclick="closeModal()" class="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center text-xs hover:bg-slate-200 dark:hover:bg-slate-700">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-
-            <form id="flightForm" onsubmit="event.preventDefault(); saveData();" class="space-y-3">
-                <input type="hidden" id="recordId">
-                <div id="dynamicFormFields" class="space-y-3"></div>
-                <div class="pt-2">
-                    <button type="submit" id="btnSave" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-colors shadow-xs flex items-center justify-center gap-2">
-                        <span id="btnSaveSpinner" class="hidden w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                        <span id="btnSaveText">Simpan Data</span>
-                    </button>
-                </div>
-            </form>
         </div>
     </div>
 
-    <!-- Delete Confirmation Modal -->
-    <div id="deleteModalBackdrop" onclick="closeDeleteModal()" class="hidden fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-50 transition-opacity opacity-0"></div>
-    <div id="deleteModal" class="hidden fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 transform max-w-xs w-full px-4">
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl p-5 text-center">
-            <div class="w-11 h-11 rounded-full bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 mx-auto flex items-center justify-center mb-3 text-base">
+    <div id="deleteModalBackdrop" onclick="closeDeleteModal()" class="hidden fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 transition-opacity opacity-0"></div>
+    <div id="deleteModal" class="hidden fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 transform max-w-xs w-full transition-all duration-200 px-4">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-xl p-6 text-center">
+            <div class="w-14 h-14 rounded-full bg-rose-100 dark:bg-rose-950/60 text-rose-600 mx-auto flex items-center justify-center mb-4 text-2xl">
                 <i class="fa-solid fa-triangle-exclamation"></i>
             </div>
-            <h3 class="text-sm font-bold text-slate-900 dark:text-white">Hapus Data?</h3>
-            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 mb-4 leading-relaxed">
-                Hapus penerbangan <span id="deleteFlightNoTarget" class="font-mono font-bold text-rose-600 dark:text-rose-400"></span>?
+            <h3 class="text-base font-bold text-slate-900 dark:text-white mb-2">Hapus Penerbangan?</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mb-6 leading-relaxed">
+                Anda akan menghapus data penerbangan <span id="deleteFlightNoTarget" class="font-mono font-bold text-rose-600 dark:text-rose-400"></span>. Data yang dihapus tidak dapat dikembalikan.
             </p>
-            <div class="flex items-center gap-2">
-                <button type="button" onclick="closeDeleteModal()" class="flex-1 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-semibold">Batal</button>
-                <button type="button" id="btnConfirmDelete" onclick="executeDeleteFlight()" class="flex-1 py-2.5 bg-rose-600 text-white rounded-xl text-xs font-bold shadow-xs flex items-center justify-center gap-1.5">
-                    <span id="btnDeleteSpinner" class="hidden w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                    <span id="btnDeleteText">Hapus</span>
+            <div class="flex gap-3">
+                <button type="button" onclick="closeDeleteModal()" class="flex-1 py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold active:scale-95 transition-transform">Batal</button>
+                <button type="button" id="btnConfirmDelete" onclick="executeDeleteFlight()" class="flex-1 py-3 bg-rose-600 text-white rounded-xl text-xs font-bold shadow-md shadow-rose-600/30 flex items-center justify-center gap-2 active:scale-95 transition-transform">
+                    <span id="btnDeleteSpinner" class="hidden w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    <span id="btnDeleteText">Ya, Hapus</span>
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Toast Notification -->
-    <div id="toast" class="fixed bottom-4 inset-x-4 z-50 transition-all duration-300 transform translate-y-20 opacity-0 pointer-events-none">
-        <div class="bg-slate-900 dark:bg-white text-white dark:text-slate-900 p-3 rounded-xl shadow-lg flex items-center gap-3 border border-slate-800 dark:border-slate-200 relative overflow-hidden pointer-events-auto">
-            <div id="toastIcon" class="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-lg text-white bg-emerald-500 text-xs">
+    <div id="toast" class="fixed top-4 inset-x-4 z-[60] transition-all duration-300 transform -translate-y-24 opacity-0 pointer-events-none">
+        <div class="bg-slate-900 dark:bg-white text-white dark:text-slate-900 p-3 rounded-xl shadow-lg flex items-center gap-3 relative overflow-hidden pointer-events-auto max-w-sm mx-auto">
+            <div id="toastIcon" class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-white bg-emerald-500 text-sm">
                 <i class="fa-solid fa-check"></i>
             </div>
-            <div class="flex-1 pr-1">
+            <div class="flex-1 pr-2">
                 <h4 id="toastTitle" class="text-xs font-bold">Berhasil</h4>
-                <p id="toastMessage" class="text-[11px] opacity-80 leading-snug">Data diperbarui.</p>
+                <p id="toastMessage" class="text-[11px] opacity-80 mt-0.5 leading-tight">Aksi berhasil dilakukan.</p>
             </div>
-            <div id="toastProgressBar" class="absolute bottom-0 left-0 h-0.5 bg-emerald-500"></div>
+            <div id="toastProgressBar" class="absolute bottom-0 left-0 h-1 bg-emerald-500"></div>
         </div>
     </div>
 
     <script>
         let masterType = 'ARRIVAL';
-        let viewMode = 'MOBILE'; // 'MOBILE' or 'PC'
         let arrivalDataCache = [];
         let departureDataCache = [];
         let filteredData = [];
         let activeStatusFilter = 'ALL';
-
         let synth;
         try { synth = new Tone.Synth().toDestination(); } catch(e) {}
 
@@ -336,54 +231,12 @@
             setInterval(() => loadData(true), 30000);
         });
 
-        function changeScreenScale(scaleVal) {
-            const wrapper = document.getElementById('scalableWrapper');
-            if (wrapper) {
-                wrapper.style.transform = `scale(${scaleVal})`;
-                const scalePercentage = Math.round(parseFloat(scaleVal) * 100);
-                showToast('Skala Ukuran', `Tampilan disesuaikan ke ${scalePercentage}%`, 'info');
-            }
-        }
-
-        function toggleViewMode() {
-            viewMode = viewMode === 'MOBILE' ? 'PC' : 'MOBILE';
-            const mainContainer = document.getElementById('appMainContainer');
-            const modeBadge = document.getElementById('modeBadge');
-            const viewModeText = document.getElementById('viewModeText');
-            const viewModeIcon = document.getElementById('viewModeIcon');
-            const mobileCardList = document.getElementById('mobileCardList');
-            const pcTableView = document.getElementById('pcTableView');
-            const footerHint = document.getElementById('footerHint');
-
-            if (viewMode === 'PC') {
-                mainContainer.className = "app-container flex-1 p-3 md:p-6 max-w-6xl w-full mx-auto flex flex-col gap-2.5 overflow-hidden";
-                modeBadge.innerText = 'PC MODE';
-                viewModeText.innerText = 'Mode Smartphone';
-                viewModeIcon.className = 'fa-solid fa-mobile-screen-button';
-                mobileCardList.classList.add('hidden');
-                pcTableView.classList.remove('hidden');
-                footerHint.innerText = 'Klik baris untuk rincian';
-                showToast('Mode PC', 'Tampilan dialihkan ke mode PC / Desktop.', 'info');
-            } else {
-                mainContainer.className = "app-container flex-1 p-2.5 max-w-lg w-full mx-auto flex flex-col gap-2.5 overflow-hidden";
-                modeBadge.innerText = 'MOBILE';
-                viewModeText.innerText = 'Mode PC';
-                viewModeIcon.className = 'fa-solid fa-desktop';
-                pcTableView.classList.add('hidden');
-                mobileCardList.classList.remove('hidden');
-                footerHint.innerText = 'Ketuk kartu untuk detail';
-                showToast('Mode Smartphone', 'Tampilan dialihkan ke mode smartphone.', 'info');
-            }
-            applyFilteringAndSorting();
-        }
-
         function updateClock() {
             const now = new Date();
             const hrs = String(now.getHours()).padStart(2, '0');
             const mins = String(now.getMinutes()).padStart(2, '0');
-            const secs = String(now.getSeconds()).padStart(2, '0');
             const clockEl = document.getElementById('currentTime');
-            if (clockEl) clockEl.innerText = `${hrs}:${mins}:${secs}`;
+            if (clockEl) clockEl.innerText = `${hrs}:${mins}`;
             
             if (now.getSeconds() === 0 && (arrivalDataCache.length > 0 || departureDataCache.length > 0)) {
                 applyFilteringAndSorting();
@@ -394,20 +247,26 @@
             masterType = type;
             activeStatusFilter = 'ALL';
             
-            const arrBtn = document.getElementById('masterTabArrival');
-            const depBtn = document.getElementById('masterTabDeparture');
-            const btnAddText = document.getElementById('btnAddText');
+            const navArr = document.getElementById('navArrival');
+            const navDep = document.getElementById('navDeparture');
+            const headerSub = document.getElementById('headerSubtitle');
 
             if (masterType === 'ARRIVAL') {
-                arrBtn.className = "py-2.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 bg-white dark:bg-blue-600 text-slate-900 dark:text-white shadow-xs";
-                depBtn.className = "py-2.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white";
-                if (btnAddText) btnAddText.innerText = 'Entri';
+                navArr.className = "flex-1 h-full flex flex-col items-center justify-center gap-1 text-blue-600 dark:text-blue-500 font-bold transition-all";
+                navArr.innerHTML = `<i class="fa-solid fa-plane-arrival text-xl mb-0.5 transform -translate-y-1 transition-transform"></i><span class="text-[10px]">Kedatangan</span>`;
+                navDep.className = "flex-1 h-full flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 font-semibold transition-all";
+                navDep.innerHTML = `<i class="fa-solid fa-plane-departure text-lg mb-0.5"></i><span class="text-[10px]">Keberangkatan</span>`;
+                if (headerSub) headerSub.innerText = 'Kedatangan (Arrival)';
             } else {
-                depBtn.className = "py-2.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 bg-white dark:bg-blue-600 text-slate-900 dark:text-white shadow-xs";
-                arrBtn.className = "py-2.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white";
-                if (btnAddText) btnAddText.innerText = 'Entri';
+                navDep.className = "flex-1 h-full flex flex-col items-center justify-center gap-1 text-blue-600 dark:text-blue-500 font-bold transition-all";
+                navDep.innerHTML = `<i class="fa-solid fa-plane-departure text-xl mb-0.5 transform -translate-y-1 transition-transform"></i><span class="text-[10px]">Keberangkatan</span>`;
+                navArr.className = "flex-1 h-full flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 font-semibold transition-all";
+                navArr.innerHTML = `<i class="fa-solid fa-plane-arrival text-lg mb-0.5"></i><span class="text-[10px]">Kedatangan</span>`;
+                if (headerSub) headerSub.innerText = 'Keberangkatan (Departure)';
             }
 
+            document.getElementById('searchInput').value = '';
+            document.getElementById('clearSearchBtn').classList.add('hidden');
             renderFilterTabs();
             applyFilteringAndSorting();
         }
@@ -418,32 +277,29 @@
 
             if (masterType === 'ARRIVAL') {
                 container.innerHTML = `
-                    <button onclick="setStatusFilter('ALL')" data-tab="ALL" class="tab-btn px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xs">
-                        Semua <span id="badgeCountALL" class="ml-1 text-[10px] opacity-75">0</span>
+                    <button onclick="setStatusFilter('ALL')" data-tab="ALL" class="tab-btn px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap bg-slate-900 text-white dark:bg-white dark:text-slate-900 transition-colors">
+                        Semua <span id="badgeCountALL" class="ml-1 opacity-75 font-mono text-[10px]">0</span>
                     </button>
-                    <button onclick="setStatusFilter('LANDED')" data-tab="LANDED" class="tab-btn px-3 py-1.5 rounded-lg text-[11px] font-semibold whitespace-nowrap bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-                        Landed <span id="badgeCountLANDED" class="ml-1 text-[10px] opacity-75">0</span>
+                    <button onclick="setStatusFilter('LANDED')" data-tab="LANDED" class="tab-btn px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 transition-colors">
+                        Landed <span id="badgeCountLANDED" class="ml-1 opacity-75 font-mono text-[10px]">0</span>
                     </button>
-                    <button onclick="setStatusFilter('PUSHBACK')" data-tab="PUSHBACK" class="tab-btn px-3 py-1.5 rounded-lg text-[11px] font-semibold whitespace-nowrap bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-                        Pushback <span id="badgeCountPUSHBACK" class="ml-1 text-[10px] opacity-75">0</span>
-                    </button>
-                    <button onclick="setStatusFilter('SCHEDULED')" data-tab="SCHEDULED" class="tab-btn px-3 py-1.5 rounded-lg text-[11px] font-semibold whitespace-nowrap bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-                        Scheduled <span id="badgeCountSCHEDULED" class="ml-1 text-[10px] opacity-75">0</span>
+                    <button onclick="setStatusFilter('SCHEDULED')" data-tab="SCHEDULED" class="tab-btn px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 transition-colors">
+                        Scheduled <span id="badgeCountSCHEDULED" class="ml-1 opacity-75 font-mono text-[10px]">0</span>
                     </button>
                 `;
             } else {
                 container.innerHTML = `
-                    <button onclick="setStatusFilter('ALL')" data-tab="ALL" class="tab-btn px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xs">
-                        Semua <span id="badgeCountALL" class="ml-1 text-[10px] opacity-75">0</span>
+                    <button onclick="setStatusFilter('ALL')" data-tab="ALL" class="tab-btn px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap bg-slate-900 text-white dark:bg-white dark:text-slate-900 transition-colors">
+                        Semua <span id="badgeCountALL" class="ml-1 opacity-75 font-mono text-[10px]">0</span>
                     </button>
-                    <button onclick="setStatusFilter('OPEN')" data-tab="OPEN" class="tab-btn px-3 py-1.5 rounded-lg text-[11px] font-semibold whitespace-nowrap bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-                        Open <span id="badgeCountOPEN" class="ml-1 text-[10px] opacity-75">0</span>
+                    <button onclick="setStatusFilter('OPEN')" data-tab="OPEN" class="tab-btn px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 transition-colors">
+                        Open <span id="badgeCountOPEN" class="ml-1 opacity-75 font-mono text-[10px]">0</span>
                     </button>
-                    <button onclick="setStatusFilter('BOARDING')" data-tab="BOARDING" class="tab-btn px-3 py-1.5 rounded-lg text-[11px] font-semibold whitespace-nowrap bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-                        Boarding <span id="badgeCountBOARDING" class="ml-1 text-[10px] opacity-75">0</span>
+                    <button onclick="setStatusFilter('BOARDING')" data-tab="BOARDING" class="tab-btn px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 transition-colors">
+                        Boarding <span id="badgeCountBOARDING" class="ml-1 opacity-75 font-mono text-[10px]">0</span>
                     </button>
-                    <button onclick="setStatusFilter('DEPARTED')" data-tab="DEPARTED" class="tab-btn px-3 py-1.5 rounded-lg text-[11px] font-semibold whitespace-nowrap bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-                        Departed <span id="badgeCountDEPARTED" class="ml-1 text-[10px] opacity-75">0</span>
+                    <button onclick="setStatusFilter('DEPARTED')" data-tab="DEPARTED" class="tab-btn px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 transition-colors">
+                        Departed <span id="badgeCountDEPARTED" class="ml-1 opacity-75 font-mono text-[10px]">0</span>
                     </button>
                 `;
             }
@@ -451,7 +307,7 @@
 
         function loadData(isSilent = false) {
             const overlay = document.getElementById('loadingOverlay');
-            if (!isSilent && overlay) overlay.classList.remove('hidden', 'opacity-0');
+            if (!isSilent && overlay) overlay.classList.remove('hidden');
             
             if (typeof google !== 'undefined' && google.script && google.script.run) {
                 google.script.run
@@ -460,17 +316,30 @@
                     .getAllFlightOpsData();
             } else {
                 setTimeout(() => {
-                    const mockArr = [{id: 1, type: 'ARRIVAL', groundHandling: 'GAPURA', noFlight: 'GA 183', origin: 'KNO', bcbNo: 'BCB-001', parkingStand: 'B3', aibt: '14:20'}];
-                    const mockDep = [{id: 1, type: 'DEPARTURE', desk: 'D10', maskapai: 'Garuda', flightNo: 'GA 182', dos: 'CGK-KNO', tipePesawat: 'B738', jamBuka: '03:45', jamTutup: '04:15', std: '06:45'}];
+                    const now = new Date();
+                    const fmt = (d) => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+                    const addMins = (m) => new Date(now.getTime() + m * 60000);
+
+                    const mockArr = [
+                        {id: 1, type: 'ARRIVAL', groundHandling: 'GAPURA', noFlight: 'GA 183', origin: 'KNO', bcbNo: 'BCB-001', parkingStand: 'B3', aibt: fmt(addMins(-15))},
+                        {id: 2, type: 'ARRIVAL', groundHandling: 'JAS', noFlight: 'SQ 950', origin: 'SIN', bcbNo: '-', parkingStand: 'A2', aibt: ''}
+                    ];
+                    
+                    const mockDep = [
+                        { id: 101, type: 'DEPARTURE', desk: 'D10-D12', maskapai: 'Garuda Indonesia', flightNo: 'GA 182', dos: 'CGK-KNO', tipePesawat: 'B737-800', jamBuka: fmt(addMins(-150)), jamTutup: fmt(addMins(-20)), std: fmt(addMins(20)) },
+                        { id: 102, type: 'DEPARTURE', desk: 'E01-E04', maskapai: 'Batik Air', flightNo: 'ID 6872', dos: 'CGK-DPS', tipePesawat: 'A320', jamBuka: fmt(addMins(-50)), jamTutup: fmt(addMins(15)), std: fmt(addMins(55)) }
+                    ];
                     onDataLoaded({ arrival: mockArr, departure: mockDep }, isSilent);
-                }, 300);
+                }, 600);
             }
         }
 
         function onDataLoaded(res, isSilent) {
             arrivalDataCache = res.arrival || [];
             departureDataCache = res.departure || [];
-            renderFilterTabs();
+            if (!document.getElementById('statusFilterTabs').innerHTML.trim()) {
+                renderFilterTabs();
+            }
             applyFilteringAndSorting();
             const overlay = document.getElementById('loadingOverlay');
             if (!isSilent && overlay) overlay.classList.add('hidden');
@@ -478,7 +347,7 @@
 
         function onDataLoadError(err, isSilent) {
             if (!isSilent) {
-                showToast('Gagal Memuat', err.toString(), 'error');
+                showToast('Koneksi Gagal', 'Gagal memuat data dari server.', 'error');
                 const overlay = document.getElementById('loadingOverlay');
                 if (overlay) overlay.classList.add('hidden');
             }
@@ -486,19 +355,10 @@
 
         function calculateFlightStatus(item) {
             if (masterType === 'ARRIVAL') {
-                const now = new Date();
-                const curMins = now.getHours() * 60 + now.getMinutes();
-                const aibtMins = timeToMinutes(item.aibt);
-
-                if (aibtMins !== -1) {
-                    if (curMins >= aibtMins + 50) {
-                        return { key: 'PUSHBACK', label: 'PUSHBACK', bg: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-300 dark:border-purple-800', dot: 'bg-purple-500', info: `Pushback (${curMins - aibtMins}m lalu)`, priority: 3 };
-                    }
-                    if (curMins >= aibtMins) {
-                        return { key: 'LANDED', label: 'LANDED', bg: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-300 dark:border-emerald-800', dot: 'bg-emerald-500', info: `AIBT ${item.aibt}`, priority: 2 };
-                    }
+                if (item.aibt && item.aibt.trim() !== '') {
+                    return { key: 'LANDED', label: 'LANDED', bg: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/60', dot: 'bg-emerald-500', info: `Tiba ${item.aibt}`, priority: 2 };
                 }
-                return { key: 'SCHEDULED', label: 'SCHEDULED', bg: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800', dot: 'bg-blue-500 animate-pulse', info: 'Menunggu AIBT', priority: 1 };
+                return { key: 'SCHEDULED', label: 'SCHEDULED', bg: 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 border-blue-200 dark:border-blue-800/60', dot: 'bg-blue-500 animate-pulse', info: 'Menunggu', priority: 1 };
             } else {
                 const now = new Date();
                 const cur = now.getHours() * 60 + now.getMinutes();
@@ -507,15 +367,17 @@
                 const departure = timeToMinutes(item.std);
 
                 if (buka !== -1 && tutup !== -1 && cur >= buka && cur <= tutup) {
-                    return { key: 'OPEN', label: 'OPEN', bg: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-300 dark:border-emerald-800', dot: 'bg-emerald-500 animate-pulse', info: `Tutup ${tutup - cur}m lagi`, priority: 1 };
+                    const sisaMenit = tutup - cur;
+                    return { key: 'OPEN', label: 'OPEN', bg: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/60', dot: 'bg-emerald-500 animate-pulse', info: `Tutup dlm ${sisaMenit}m`, priority: 1 };
                 }
-                if (tutup !== -1 && departure !== -1 && cur > tutup && cur <= departure) {
-                    return { key: 'BOARDING', label: 'BOARDING', bg: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-300 dark:border-amber-800', dot: 'bg-amber-500', info: `STD ${departure - cur}m lagi`, priority: 2 };
+                if (tutup !== -1 && cur > tutup && (departure === -1 || cur <= departure)) {
+                    return { key: 'BOARDING', label: 'BOARDING', bg: 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 border-amber-200 dark:border-amber-800/60', dot: 'bg-amber-500', info: 'Counter Tutup', priority: 2 };
                 }
                 if (departure !== -1 && cur > departure) {
-                    return { key: 'DEPARTED', label: 'DEPARTED', bg: 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 opacity-60', dot: 'bg-slate-400', info: 'Berangkat', priority: 4 };
+                    return { key: 'DEPARTED', label: 'DEPARTED', bg: 'bg-slate-200 text-slate-500 dark:bg-slate-800 dark:text-slate-400 border-slate-300 dark:border-slate-700', dot: 'bg-slate-400', info: 'Berangkat', priority: 4 };
                 }
-                return { key: 'UPCOMING', label: 'UPCOMING', bg: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800', dot: 'bg-blue-500', info: `Buka ${item.jamBuka || '--:--'}`, priority: 3 };
+                const sisaBuka = buka - cur;
+                return { key: 'UPCOMING', label: 'UPCOMING', bg: 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 border-blue-200 dark:border-blue-800/60', dot: 'bg-blue-500', info: (sisaBuka > 0) ? `Buka dlm ${sisaBuka}m` : `Buka ${item.jamBuka || '--:--'}`, priority: 3 };
             }
         }
 
@@ -525,14 +387,42 @@
             return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
         }
 
+        function autoCalculateDepTimes(stdVal) {
+            if (!stdVal) return;
+            let val = stdVal.trim();
+            if (val.length === 4 && !val.includes(':') && !isNaN(val)) {
+                val = val.substring(0, 2) + ':' + val.substring(2);
+                const stdInput = document.getElementById('dep-std');
+                if (stdInput) stdInput.value = val;
+            }
+            if (/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(val)) {
+                const parts = val.split(':');
+                const hours = parseInt(parts[0], 10);
+                const mins = parseInt(parts[1], 10);
+                const totalMins = hours * 60 + mins;
+
+                let openMins = (totalMins - 180 + 1440) % 1440;
+                let openH = String(Math.floor(openMins / 60)).padStart(2, '0');
+                let openM = String(openMins % 60).padStart(2, '0');
+
+                let closeMins = (totalMins - 40 + 1440) % 1440;
+                let closeH = String(Math.floor(closeMins / 60)).padStart(2, '0');
+                let closeM = String(closeMins % 60).padStart(2, '0');
+
+                const bukaInput = document.getElementById('dep-jamBuka');
+                const tutupInput = document.getElementById('dep-jamTutup');
+                if (bukaInput) bukaInput.value = `${openH}:${openM}`;
+                if (tutupInput) tutupInput.value = `${closeH}:${closeM}`;
+            }
+        }
+
         function setStatusFilter(statusKey) {
             activeStatusFilter = statusKey;
             document.querySelectorAll('#statusFilterTabs button').forEach(btn => {
-                const tab = btn.getAttribute('data-tab');
-                if (tab === statusKey) {
-                    btn.className = "tab-btn px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xs";
+                if (btn.getAttribute('data-tab') === statusKey) {
+                    btn.className = "tab-btn px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap bg-slate-900 text-white dark:bg-white dark:text-slate-900 transition-colors shadow-md shadow-slate-900/10 dark:shadow-white/10";
                 } else {
-                    btn.className = "tab-btn px-3 py-1.5 rounded-lg text-[11px] font-semibold whitespace-nowrap bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300";
+                    btn.className = "tab-btn px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 transition-colors";
                 }
             });
             applyFilteringAndSorting();
@@ -550,38 +440,19 @@
             applyFilteringAndSorting();
         }
 
-        function updateCounts() {
+        function applyFilteringAndSorting() {
             const currentList = masterType === 'ARRIVAL' ? arrivalDataCache : departureDataCache;
             const counts = { ALL: currentList.length };
-            
-            if (masterType === 'ARRIVAL') {
-                counts.LANDED = 0; counts.PUSHBACK = 0; counts.SCHEDULED = 0;
-                currentList.forEach(item => {
-                    const st = calculateFlightStatus(item);
-                    if (counts[st.key] !== undefined) counts[st.key]++;
-                });
-                if (document.getElementById('badgeCountALL')) document.getElementById('badgeCountALL').innerText = counts.ALL;
-                if (document.getElementById('badgeCountLANDED')) document.getElementById('badgeCountLANDED').innerText = counts.LANDED;
-                if (document.getElementById('badgeCountPUSHBACK')) document.getElementById('badgeCountPUSHBACK').innerText = counts.PUSHBACK;
-                if (document.getElementById('badgeCountSCHEDULED')) document.getElementById('badgeCountSCHEDULED').innerText = counts.SCHEDULED;
-            } else {
-                counts.OPEN = 0; counts.BOARDING = 0; counts.DEPARTED = 0; counts.UPCOMING = 0;
-                currentList.forEach(item => {
-                    const st = calculateFlightStatus(item);
-                    if (counts[st.key] !== undefined) counts[st.key]++;
-                });
-                if (document.getElementById('badgeCountALL')) document.getElementById('badgeCountALL').innerText = counts.ALL;
-                if (document.getElementById('badgeCountOPEN')) document.getElementById('badgeCountOPEN').innerText = counts.OPEN;
-                if (document.getElementById('badgeCountBOARDING')) document.getElementById('badgeCountBOARDING').innerText = counts.BOARDING;
-                if (document.getElementById('badgeCountDEPARTED')) document.getElementById('badgeCountDEPARTED').innerText = counts.DEPARTED;
-            }
-        }
+            currentList.forEach(item => {
+                const st = calculateFlightStatus(item).key;
+                counts[st] = (counts[st] || 0) + 1;
+            });
+            Object.keys(counts).forEach(key => {
+                const badge = document.getElementById(`badgeCount${key}`);
+                if (badge) badge.innerText = counts[key];
+            });
 
-        function applyFilteringAndSorting() {
-            updateCounts();
-            const currentList = masterType === 'ARRIVAL' ? arrivalDataCache : departureDataCache;
             const term = document.getElementById('searchInput').value.toLowerCase().trim();
-            
             filteredData = currentList.filter(item => {
                 const status = calculateFlightStatus(item);
                 if (activeStatusFilter !== 'ALL' && status.key !== activeStatusFilter) return false;
@@ -594,28 +465,19 @@
                 return true;
             });
 
-            filteredData.sort((a, b) => {
-                const stA = calculateFlightStatus(a);
-                const stB = calculateFlightStatus(b);
-                return stA.priority - stB.priority;
-            });
-
-            if (viewMode === 'PC') {
-                renderPcTable();
-            } else {
-                renderMobileCards();
-            }
+            filteredData.sort((a, b) => calculateFlightStatus(a).priority - calculateFlightStatus(b).priority);
+            renderMobileCards();
         }
 
         function renderMobileCards() {
             const container = document.getElementById('mobileCardList');
             const emptyState = document.getElementById('emptyState');
             if (!container || !emptyState) return;
+            
             container.innerHTML = '';
 
             if (filteredData.length === 0) {
                 emptyState.classList.remove('hidden');
-                if (document.getElementById('totalDataCount')) document.getElementById('totalDataCount').innerText = `0 penerbangan`;
                 return;
             } else {
                 emptyState.classList.add('hidden');
@@ -624,221 +486,107 @@
             filteredData.forEach(row => {
                 const status = calculateFlightStatus(row);
                 const card = document.createElement('div');
-                card.className = "bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl p-3.5 shadow-xs transition-all active:scale-[0.99] w-full";
-                card.onclick = () => toggleCardDetail(row.id);
+                card.className = "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm transition-transform active:scale-[0.98]";
+                
+                card.onclick = () => {
+                    const detail = document.getElementById(`card-detail-${row.id}`);
+                    if(detail) detail.classList.toggle('hidden');
+                };
 
                 if (masterType === 'ARRIVAL') {
                     card.innerHTML = `
-                        <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
-                            <div class="flex items-center gap-1.5 min-w-0">
-                                <span class="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded font-bold text-[11px] text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700">${row.groundHandling || '-'}</span>
-                                <span class="font-mono font-bold text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 rounded border border-blue-100 dark:border-blue-900/50">${row.noFlight || '-'}</span>
+                        <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <span class="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded font-bold text-[10px] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">${row.groundHandling || '-'}</span>
+                                <span class="font-mono font-bold text-sm text-blue-600 dark:text-blue-400 truncate">${row.noFlight || '-'}</span>
                             </div>
-                            <span class="px-2.5 py-0.5 rounded-full border text-[9px] font-bold uppercase flex items-center gap-1 flex-shrink-0 ${status.bg}">
+                            <span class="px-2.5 py-1 rounded-lg border text-[9px] font-bold uppercase flex items-center gap-1.5 flex-shrink-0 ${status.bg}">
                                 <span class="w-1.5 h-1.5 rounded-full ${status.dot}"></span>
                                 ${status.label}
                             </span>
                         </div>
-                        <div class="flex items-center justify-between pt-2.5">
-                            <div class="min-w-0 pr-2">
-                                <h4 class="text-xs font-bold text-slate-900 dark:text-white truncate">Asal: <span class="font-mono">${row.origin || '-'}</span></h4>
-                                <p class="text-[10px] text-slate-400 font-medium mt-0.5 truncate">Stand: <span class="font-mono font-bold text-slate-700 dark:text-slate-300">${row.parkingStand || '-'}</span></p>
+                        <div class="flex items-center justify-between pt-3">
+                            <div class="min-w-0">
+                                <h4 class="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">Asal: <span class="font-mono font-bold text-slate-900 dark:text-white">${row.origin || '-'}</span></h4>
+                                <p class="text-[10px] text-slate-500 font-medium mt-1 truncate">Stand: <span class="font-mono text-slate-700 dark:text-slate-300 font-bold">${row.parkingStand || '-'}</span></p>
                             </div>
-                            <div class="text-right flex-shrink-0">
-                                <span class="text-[9px] font-bold text-slate-400 uppercase block">AIBT</span>
+                            <div class="text-right flex-shrink-0 bg-slate-50 dark:bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-100 dark:border-slate-800">
+                                <span class="text-[9px] font-bold text-slate-400 uppercase block mb-0.5">Aktual (AIBT)</span>
                                 <span class="font-mono font-extrabold text-sm text-slate-900 dark:text-white">${row.aibt || '--:--'}</span>
                             </div>
                         </div>
-                        <div id="card-detail-${row.id}" class="hidden mt-2.5 pt-2.5 border-t border-slate-100 dark:border-slate-800 space-y-2.5 animate-fade">
-                            <div class="grid grid-cols-2 gap-2 text-[11px]">
-                                <div class="bg-slate-50 dark:bg-slate-950 p-2.5 rounded-lg border border-slate-200/60 dark:border-slate-800">
-                                    <span class="text-[9px] text-slate-400 font-bold uppercase block">BCB No</span>
-                                    <span class="font-mono font-bold text-slate-800 dark:text-slate-200 mt-0.5 block truncate">${row.bcbNo || '-'}</span>
-                                </div>
-                                <div class="bg-slate-50 dark:bg-slate-950 p-2.5 rounded-lg border border-slate-200/60 dark:border-slate-800">
-                                    <span class="text-[9px] text-slate-400 font-bold uppercase block">Parking Stand</span>
-                                    <span class="font-mono font-bold text-slate-800 dark:text-slate-200 mt-0.5 block truncate">${row.parkingStand || '-'}</span>
+                        <div id="card-detail-${row.id}" class="hidden mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 animate-fade">
+                            <div class="flex flex-col gap-2 mb-3">
+                                <div class="bg-slate-50 dark:bg-slate-950/50 p-2.5 rounded-xl text-xs flex justify-between items-center border border-slate-100 dark:border-slate-800/80">
+                                    <span class="text-slate-500">BCB No:</span>
+                                    <span class="font-mono font-bold">${row.bcbNo || '-'}</span>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-2 pt-1">
-                                <button onclick="event.stopPropagation(); openModal(${row.id})" class="flex-1 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-xs">
-                                    <i class="fa-solid fa-pen-to-square text-[10px]"></i> Edit
+                            <div class="flex gap-2">
+                                <button onclick="event.stopPropagation(); openModal(${row.id})" class="flex-1 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold active:scale-95 transition-transform flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-pen-to-square"></i> Edit
                                 </button>
-                                <button onclick="event.stopPropagation(); confirmDeleteFlight(${row.id}, '${row.noFlight}')" class="py-2.5 px-4 bg-rose-500 hover:bg-rose-600 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-xs">
-                                    <i class="fa-solid fa-trash-can text-[10px]"></i> Hapus
+                                <button onclick="event.stopPropagation(); confirmDeleteFlight(${row.id}, '${row.noFlight}')" class="flex-1 py-2.5 bg-rose-50 text-rose-600 dark:bg-rose-950/30 dark:text-rose-400 rounded-xl text-xs font-bold active:scale-95 transition-transform flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-trash-can"></i> Hapus
                                 </button>
                             </div>
                         </div>
                     `;
                 } else {
                     card.innerHTML = `
-                        <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
-                            <div class="flex items-center gap-1.5 min-w-0">
-                                <span class="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded font-mono text-[11px] font-bold text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700">${row.desk || '-'}</span>
-                                <span class="font-mono font-bold text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 rounded border border-blue-100 dark:border-blue-900/50">${row.flightNo || '-'}</span>
+                        <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <span class="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded font-mono text-[10px] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 font-bold">${row.desk || '-'}</span>
+                                <span class="font-mono font-bold text-sm text-blue-600 dark:text-blue-400 truncate">${row.flightNo || '-'}</span>
                             </div>
-                            <span class="px-2.5 py-0.5 rounded-full border text-[9px] font-bold uppercase flex items-center gap-1 flex-shrink-0 ${status.bg}">
+                            <span class="px-2.5 py-1 rounded-lg border text-[9px] font-bold uppercase flex items-center gap-1.5 flex-shrink-0 ${status.bg}">
                                 <span class="w-1.5 h-1.5 rounded-full ${status.dot}"></span>
                                 ${status.label}
                             </span>
                         </div>
-                        <div class="flex items-center justify-between pt-2.5">
+                        <div class="flex items-center justify-between pt-3">
                             <div class="min-w-0 pr-2">
-                                <h4 class="text-xs font-bold text-slate-900 dark:text-white truncate">${row.maskapai || '-'}</h4>
-                                <p class="text-[10px] text-slate-400 font-medium mt-0.5 truncate">${status.info}</p>
+                                <h4 class="text-xs font-bold text-slate-900 dark:text-white truncate mb-1">${row.maskapai || '-'}</h4>
+                                <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-slate-50 dark:bg-slate-950 text-[10px] text-slate-500 border border-slate-100 dark:border-slate-800">
+                                    <i class="fa-regular fa-clock text-[9px]"></i>
+                                    <span>${status.info}</span>
+                                </div>
                             </div>
-                            <div class="text-right flex-shrink-0">
-                                <span class="text-[9px] font-bold text-slate-400 uppercase block">STD</span>
+                            <div class="text-right flex-shrink-0 bg-slate-50 dark:bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-100 dark:border-slate-800">
+                                <span class="text-[9px] font-bold text-slate-400 uppercase block mb-0.5">Jadwal (STD)</span>
                                 <span class="font-mono font-extrabold text-sm text-slate-900 dark:text-white">${row.std || '--:--'}</span>
                             </div>
                         </div>
-                        <div id="card-detail-${row.id}" class="hidden mt-2.5 pt-2.5 border-t border-slate-100 dark:border-slate-800 space-y-2.5 animate-fade">
-                            <div class="grid grid-cols-2 gap-2 text-[11px]">
-                                <div class="bg-slate-50 dark:bg-slate-950 p-2.5 rounded-lg border border-slate-200/60 dark:border-slate-800">
-                                    <span class="text-[9px] text-slate-400 font-bold uppercase block">Rute / DOS</span>
-                                    <span class="font-mono font-bold text-slate-800 dark:text-slate-200 mt-0.5 block truncate">${row.dos || '-'}</span>
+                        <div id="card-detail-${row.id}" class="hidden mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 animate-fade">
+                            <div class="grid grid-cols-2 gap-2 mb-3">
+                                <div class="bg-slate-50 dark:bg-slate-950/50 p-2.5 rounded-xl text-[10px] flex flex-col gap-1 border border-slate-100 dark:border-slate-800/80">
+                                    <span class="text-slate-400 uppercase font-bold">Rute (DOS)</span>
+                                    <span class="font-mono font-bold text-slate-800 dark:text-slate-200 text-xs">${row.dos || '-'}</span>
                                 </div>
-                                <div class="bg-slate-50 dark:bg-slate-950 p-2.5 rounded-lg border border-slate-200/60 dark:border-slate-800">
-                                    <span class="text-[9px] text-slate-400 font-bold uppercase block">Tipe Pesawat</span>
-                                    <span class="font-semibold text-slate-800 dark:text-slate-200 truncate block">${row.tipePesawat || '-'}</span>
+                                <div class="bg-slate-50 dark:bg-slate-950/50 p-2.5 rounded-xl text-[10px] flex flex-col gap-1 border border-slate-100 dark:border-slate-800/80">
+                                    <span class="text-slate-400 uppercase font-bold">Tipe Pesawat</span>
+                                    <span class="font-semibold text-slate-800 dark:text-slate-200 text-xs">${row.tipePesawat || '-'}</span>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-2 pt-1">
-                                <button onclick="event.stopPropagation(); openModal(${row.id})" class="flex-1 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-xs">
-                                    <i class="fa-solid fa-pen-to-square text-[10px]"></i> Edit
+                            <div class="flex gap-2">
+                                <button onclick="event.stopPropagation(); openModal(${row.id})" class="flex-1 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold active:scale-95 transition-transform flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-pen-to-square"></i> Edit
                                 </button>
-                                <button onclick="event.stopPropagation(); confirmDeleteFlight(${row.id}, '${row.flightNo}')" class="py-2.5 px-4 bg-rose-500 hover:bg-rose-600 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-xs">
-                                    <i class="fa-solid fa-trash-can text-[10px]"></i> Hapus
+                                <button onclick="event.stopPropagation(); confirmDeleteFlight(${row.id}, '${row.flightNo}')" class="flex-1 py-2.5 bg-rose-50 text-rose-600 dark:bg-rose-950/30 dark:text-rose-400 rounded-xl text-xs font-bold active:scale-95 transition-transform flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-trash-can"></i> Hapus
                                 </button>
                             </div>
                         </div>
                     `;
                 }
-
                 container.appendChild(card);
             });
-
-            if (document.getElementById('totalDataCount')) {
-                document.getElementById('totalDataCount').innerText = `${filteredData.length} penerbangan`;
-            }
-        }
-
-        function renderPcTable() {
-            const thead = document.getElementById('pcTableHead');
-            const tbody = document.getElementById('pcTableBody');
-            const emptyState = document.getElementById('emptyState');
-            if (!thead || !tbody || !emptyState) return;
-
-            tbody.innerHTML = '';
-
-            if (filteredData.length === 0) {
-                emptyState.classList.remove('hidden');
-                if (document.getElementById('totalDataCount')) document.getElementById('totalDataCount').innerText = `0 penerbangan`;
-                return;
-            } else {
-                emptyState.classList.add('hidden');
-            }
-
-            if (masterType === 'ARRIVAL') {
-                thead.innerHTML = `
-                    <tr>
-                        <th class="py-3 px-4">Ground Handling</th>
-                        <th class="py-3 px-4">No Flight</th>
-                        <th class="py-3 px-4">Asal (Origin)</th>
-                        <th class="py-3 px-4">BCB No</th>
-                        <th class="py-3 px-4">Parking Stand</th>
-                        <th class="py-3 px-4 text-center">AIBT</th>
-                        <th class="py-3 px-4 text-center">Status</th>
-                        <th class="py-3 px-4 text-right">Aksi</th>
-                    </tr>
-                `;
-
-                filteredData.forEach(row => {
-                    const status = calculateFlightStatus(row);
-                    const tr = document.createElement('tr');
-                    tr.className = "hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-100 dark:border-slate-800/50";
-                    tr.innerHTML = `
-                        <td class="py-3 px-4 font-bold text-slate-800 dark:text-slate-200">${row.groundHandling || '-'}</td>
-                        <td class="py-3 px-4 font-mono font-bold text-blue-600 dark:text-blue-400">${row.noFlight || '-'}</td>
-                        <td class="py-3 px-4 font-mono font-semibold">${row.origin || '-'}</td>
-                        <td class="py-3 px-4 font-mono text-slate-600 dark:text-slate-400">${row.bcbNo || '-'}</td>
-                        <td class="py-3 px-4 font-mono font-bold">${row.parkingStand || '-'}</td>
-                        <td class="py-3 px-4 text-center font-mono font-extrabold text-slate-900 dark:text-white">${row.aibt || '--:--'}</td>
-                        <td class="py-3 px-4 text-center">
-                            <span class="px-2.5 py-0.5 rounded-full border text-[10px] font-bold uppercase inline-flex items-center gap-1 ${status.bg}">
-                                <span class="w-1.5 h-1.5 rounded-full ${status.dot}"></span>
-                                ${status.label}
-                            </span>
-                        </td>
-                        <td class="py-3 px-4 text-right">
-                            <div class="flex items-center justify-end gap-1.5">
-                                <button onclick="openModal(${row.id})" class="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-semibold">Edit</button>
-                                <button onclick="confirmDeleteFlight(${row.id}, '${row.noFlight}')" class="px-2.5 py-1 bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 rounded-lg text-xs font-semibold">Hapus</button>
-                            </div>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            } else {
-                thead.innerHTML = `
-                    <tr>
-                        <th class="py-3 px-4">Desk Counter</th>
-                        <th class="py-3 px-4">Flight & Maskapai</th>
-                        <th class="py-3 px-4">Rute / DOS</th>
-                        <th class="py-3 px-4">Tipe Pesawat</th>
-                        <th class="py-3 px-4 text-center">STD</th>
-                        <th class="py-3 px-4 text-center">Status Counter</th>
-                        <th class="py-3 px-4 text-right">Aksi</th>
-                    </tr>
-                `;
-
-                filteredData.forEach(row => {
-                    const status = calculateFlightStatus(row);
-                    const tr = document.createElement('tr');
-                    tr.className = "hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-100 dark:border-slate-800/50";
-                    tr.innerHTML = `
-                        <td class="py-3 px-4 font-mono font-bold text-slate-800 dark:text-slate-200">
-                            <span class="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">${row.desk || '-'}</span>
-                        </td>
-                        <td class="py-3 px-4">
-                            <div class="font-bold text-slate-900 dark:text-white">${row.maskapai || '-'}</div>
-                            <div class="font-mono text-[11px] text-blue-600 dark:text-blue-400 font-bold">${row.flightNo || '-'}</div>
-                        </td>
-                        <td class="py-3 px-4 font-mono text-slate-600 dark:text-slate-400">${row.dos || '-'}</td>
-                        <td class="py-3 px-4 font-semibold">${row.tipePesawat || '-'}</td>
-                        <td class="py-3 px-4 text-center font-mono font-extrabold text-slate-900 dark:text-white">${row.std || '--:--'}</td>
-                        <td class="py-3 px-4 text-center">
-                            <span class="px-2.5 py-0.5 rounded-full border text-[10px] font-bold uppercase inline-flex items-center gap-1 ${status.bg}">
-                                <span class="w-1.5 h-1.5 rounded-full ${status.dot}"></span>
-                                ${status.label}
-                            </span>
-                        </td>
-                        <td class="py-3 px-4 text-right">
-                            <div class="flex items-center justify-end gap-1.5">
-                                <button onclick="openModal(${row.id})" class="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-semibold">Edit</button>
-                                <button onclick="confirmDeleteFlight(${row.id}, '${row.flightNo}')" class="px-2.5 py-1 bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 rounded-lg text-xs font-semibold">Hapus</button>
-                            </div>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            }
-
-            if (document.getElementById('totalDataCount')) {
-                document.getElementById('totalDataCount').innerText = `${filteredData.length} penerbangan`;
-            }
-        }
-
-        function toggleCardDetail(id) {
-            const detail = document.getElementById(`card-detail-${id}`);
-            if (detail) detail.classList.toggle('hidden');
         }
 
         function openModal(id = null) {
             const form = document.getElementById('flightForm');
             if (form) form.reset();
-            const recordIdEl = document.getElementById('recordId');
-            if (recordIdEl) recordIdEl.value = '';
+            document.getElementById('recordId').value = '';
             
             const headerLabel = document.getElementById('modalHeaderLabel');
             const dynamicFields = document.getElementById('dynamicFormFields');
@@ -846,40 +594,38 @@
             const record = id !== null ? currentList.find(r => r.id === id) : null;
 
             if (masterType === 'ARRIVAL') {
-                if (headerLabel) headerLabel.innerText = record ? 'Edit Kedatangan' : 'Entri Kedatangan Baru';
+                headerLabel.innerText = record ? 'Edit Kedatangan' : 'Entri Kedatangan';
                 dynamicFields.innerHTML = `
-                    <div class="grid grid-cols-2 gap-2.5">
+                    <div class="space-y-3">
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Ground Handling</label>
-                            <input type="text" id="arr-groundHandling" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2.5 text-xs font-semibold text-slate-800 dark:text-white outline-none focus:border-blue-500" placeholder="GAPURA">
+                            <label class="block text-[11px] font-bold text-slate-500 mb-1.5 px-1">No Flight & Ground Handling</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="arr-noFlight" required class="w-3/5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-mono font-bold outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all uppercase" placeholder="GA 183">
+                                <input type="text" id="arr-groundHandling" required class="w-2/5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-semibold outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all uppercase" placeholder="GAPURA">
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">No Flight</label>
-                            <input type="text" id="arr-noFlight" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2.5 text-xs font-mono font-bold text-slate-800 dark:text-white outline-none focus:border-blue-500" placeholder="GA 183">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-500 mb-1.5 px-1">Origin (Asal)</label>
+                                <input type="text" id="arr-origin" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-mono font-bold outline-none focus:border-blue-500 transition-all uppercase" placeholder="KNO">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-500 mb-1.5 px-1">Parking Stand</label>
+                                <input type="text" id="arr-parkingStand" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-mono font-bold outline-none focus:border-blue-500 transition-all uppercase" placeholder="B3">
+                            </div>
                         </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-2.5">
-                        <div>
-                            <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Origin (Asal)</label>
-                            <input type="text" id="arr-origin" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2.5 text-xs font-mono font-bold text-slate-800 dark:text-white outline-none focus:border-blue-500" placeholder="KNO">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">BCB No</label>
-                            <input type="text" id="arr-bcbNo" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2.5 text-xs font-mono font-bold text-slate-800 dark:text-white outline-none focus:border-blue-500" placeholder="BCB-001">
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-2.5">
-                        <div>
-                            <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Parking Stand</label>
-                            <input type="text" id="arr-parkingStand" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2.5 text-xs font-mono font-bold text-slate-800 dark:text-white outline-none focus:border-blue-500" placeholder="B3">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">AIBT (Aktual Datang)</label>
-                            <input type="text" id="arr-aibt" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2.5 text-xs font-mono font-bold text-center text-slate-800 dark:text-white outline-none focus:border-blue-500" placeholder="14:20">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-500 mb-1.5 px-1">BCB No</label>
+                                <input type="text" id="arr-bcbNo" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-mono font-bold outline-none focus:border-blue-500 transition-all uppercase" placeholder="BCB-001">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-500 mb-1.5 px-1 text-blue-600 dark:text-blue-400">AIBT (Jam Tiba)</label>
+                                <input type="time" id="arr-aibt" class="w-full bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 rounded-xl px-4 py-3 text-sm font-mono font-bold outline-none focus:border-blue-500 transition-all text-center">
+                            </div>
                         </div>
                     </div>
                 `;
-
                 if (record) {
                     document.getElementById('recordId').value = record.id;
                     document.getElementById('arr-groundHandling').value = record.groundHandling || '';
@@ -890,48 +636,52 @@
                     document.getElementById('arr-aibt').value = record.aibt || '';
                 }
             } else {
-                if (headerLabel) headerLabel.innerText = record ? 'Edit Keberangkatan' : 'Entri Keberangkatan Baru';
+                headerLabel.innerText = record ? 'Edit Keberangkatan' : 'Entri Keberangkatan';
                 dynamicFields.innerHTML = `
-                    <div class="grid grid-cols-2 gap-2.5">
-                        <div>
-                            <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Desk Counter</label>
-                            <input type="text" id="dep-desk" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2.5 text-xs font-semibold text-slate-800 dark:text-white outline-none focus:border-blue-500" placeholder="D10">
+                    <div class="space-y-3">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-500 mb-1.5 px-1">No Flight</label>
+                                <input type="text" id="dep-flightNo" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-mono font-bold outline-none focus:border-blue-500 transition-all uppercase" placeholder="GA 182">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-500 mb-1.5 px-1">Desk Counter</label>
+                                <input type="text" id="dep-desk" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-semibold outline-none focus:border-blue-500 transition-all uppercase" placeholder="D10-D12">
+                            </div>
                         </div>
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Flight No</label>
-                            <input type="text" id="dep-flightNo" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2.5 text-xs font-mono font-bold text-slate-800 dark:text-white outline-none focus:border-blue-500" placeholder="GA 182">
+                            <label class="block text-[11px] font-bold text-slate-500 mb-1.5 px-1">Maskapai</label>
+                            <input type="text" id="dep-maskapai" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-semibold outline-none focus:border-blue-500 transition-all" placeholder="Garuda Indonesia">
                         </div>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Maskapai</label>
-                        <input type="text" id="dep-maskapai" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2.5 text-xs font-semibold text-slate-800 dark:text-white outline-none focus:border-blue-500" placeholder="Garuda Indonesia">
-                    </div>
-                    <div class="grid grid-cols-2 gap-2.5">
-                        <div>
-                            <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Rute / DOS</label>
-                            <input type="text" id="dep-dos" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2.5 text-xs font-mono font-bold text-slate-800 dark:text-white outline-none focus:border-blue-500" placeholder="CGK-KNO">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-500 mb-1.5 px-1">Rute / DOS</label>
+                                <input type="text" id="dep-dos" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-mono font-bold outline-none focus:border-blue-500 transition-all uppercase" placeholder="CGK-KNO">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-500 mb-1.5 px-1">Tipe Pesawat</label>
+                                <input type="text" id="dep-tipePesawat" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-semibold outline-none focus:border-blue-500 transition-all uppercase" placeholder="B737-800">
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Tipe Pesawat</label>
-                            <input type="text" id="dep-tipePesawat" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2.5 text-xs font-semibold text-slate-800 dark:text-white outline-none focus:border-blue-500" placeholder="B738">
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-3 gap-2">
-                        <div>
-                            <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1 text-center">STD</label>
-                            <input type="text" id="dep-std" oninput="autoCalculateTimes()" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-2.5 text-xs font-mono font-bold text-center text-slate-900 dark:text-white outline-none focus:border-blue-500" placeholder="06:45">
-                        </div>
-                        <div>
-                            <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1 text-center">Buka (-3j)</label>
-                            <input type="text" id="dep-jamBuka" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-2.5 text-xs font-mono font-bold text-center text-slate-900 dark:text-white outline-none focus:border-blue-500" placeholder="03:45">
-                        </div>
-                        <div>
-                            <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1 text-center">Tutup (-40m)</label>
-                            <input type="text" id="dep-jamTutup" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-2.5 text-xs font-mono font-bold text-center text-slate-900 dark:text-white outline-none focus:border-blue-500" placeholder="06:05">
+                        
+                        <div class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 rounded-xl">
+                            <div class="mb-3">
+                                <label class="block text-xs font-bold text-blue-600 dark:text-blue-400 mb-1.5 text-center">Jadwal Keberangkatan (STD)</label>
+                                <input type="text" id="dep-std" oninput="autoCalculateDepTimes(this.value)" required class="w-full bg-white dark:bg-slate-950 border-2 border-blue-200 dark:border-blue-800 rounded-xl py-3 text-base font-mono font-bold text-center text-slate-900 dark:text-white outline-none focus:border-blue-500 transition-all" placeholder="06:45">
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 mb-1 text-center">Buka (-3 Jam)</label>
+                                    <input type="time" id="dep-jamBuka" class="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg py-2.5 text-sm font-mono font-bold text-center text-slate-700 dark:text-slate-300 outline-none" required>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 mb-1 text-center">Tutup (-40 Menit)</label>
+                                    <input type="time" id="dep-jamTutup" class="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg py-2.5 text-sm font-mono font-bold text-center text-slate-700 dark:text-slate-300 outline-none" required>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 `;
-
                 if (record) {
                     document.getElementById('recordId').value = record.id;
                     document.getElementById('dep-desk').value = record.desk || '';
@@ -950,124 +700,24 @@
             if (backdrop && modal) {
                 backdrop.classList.remove('hidden');
                 modal.classList.remove('hidden');
-                void modal.offsetWidth;
+                void modal.offsetWidth; 
                 backdrop.classList.remove('opacity-0');
+                modal.classList.remove('translate-y-full');
             }
-        }
-
-        function autoCalculateTimes() {
-            const stdInput = document.getElementById('dep-std');
-            if (!stdInput) return;
-            const stdVal = stdInput.value.trim();
-            if (!stdVal.match(/^\d{2}:\d{2}$/)) return;
-
-            const [hrs, mins] = stdVal.split(':').map(Number);
-            const stdTotalMins = hrs * 60 + mins;
-
-            const bukaMins = (stdTotalMins - 180 + 1440) % 1440;
-            const tutupMins = (stdTotalMins - 40 + 1440) % 1440;
-
-            const formatTime = (total) => {
-                const h = String(Math.floor(total / 60)).padStart(2, '0');
-                const m = String(total % 60).padStart(2, '0');
-                return `${h}:${m}`;
-            };
-
-            const bukaInput = document.getElementById('dep-jamBuka');
-            const tutupInput = document.getElementById('dep-jamTutup');
-            if (bukaInput) bukaInput.value = formatTime(bukaMins);
-            if (tutupInput) tutupInput.value = formatTime(tutupMins);
         }
 
         function closeModal() {
             const backdrop = document.getElementById('modalBackdrop');
             const modal = document.getElementById('formModal');
             if (!backdrop || !modal) return;
+            
             backdrop.classList.add('opacity-0');
+            modal.classList.add('translate-y-full');
             
             setTimeout(() => {
                 backdrop.classList.add('hidden');
                 modal.classList.add('hidden');
-            }, 250);
-        }
-
-        let pendingDeleteId = null;
-
-        function confirmDeleteFlight(id, flightNo) {
-            pendingDeleteId = id;
-            const target = document.getElementById('deleteFlightNoTarget');
-            if (target) target.innerText = flightNo || 'ini';
-            
-            const backdrop = document.getElementById('deleteModalBackdrop');
-            const modal = document.getElementById('deleteModal');
-            if (backdrop && modal) {
-                backdrop.classList.remove('hidden');
-                modal.classList.remove('hidden');
-                void modal.offsetWidth;
-                backdrop.classList.remove('opacity-0');
-            }
-        }
-
-        function closeDeleteModal() {
-            const backdrop = document.getElementById('deleteModalBackdrop');
-            if (!backdrop) return;
-            backdrop.classList.add('opacity-0');
-            
-            setTimeout(() => {
-                backdrop.classList.add('hidden');
-                const modal = document.getElementById('deleteModal');
-                if (modal) modal.classList.add('hidden');
-                pendingDeleteId = null;
-            }, 200);
-        }
-
-        function executeDeleteFlight() {
-            if (!pendingDeleteId) return;
-
-            const btnConfirm = document.getElementById('btnConfirmDelete');
-            const btnText = document.getElementById('btnDeleteText');
-            const spinner = document.getElementById('btnDeleteSpinner');
-
-            if (btnConfirm) btnConfirm.disabled = true;
-            if (btnText) btnText.innerText = 'Menghapus...';
-            if (spinner) spinner.classList.remove('hidden');
-
-            if (typeof google !== 'undefined' && google.script && google.script.run) {
-                google.script.run
-                    .withSuccessHandler(res => {
-                        resetDeleteState();
-                        closeDeleteModal();
-                        showToast('Terhapus', res.message, 'success');
-                        playChime('success');
-                        loadData();
-                    })
-                    .withFailureHandler(err => {
-                        resetDeleteState();
-                        closeDeleteModal();
-                        showToast('Gagal', err.toString(), 'error');
-                        playChime('error');
-                    })
-                    .deleteFlightData(masterType, pendingDeleteId);
-            } else {
-                setTimeout(() => {
-                    if (masterType === 'ARRIVAL') {
-                        arrivalDataCache = arrivalDataCache.filter(item => item.id !== pendingDeleteId);
-                    } else {
-                        departureDataCache = departureDataCache.filter(item => item.id !== pendingDeleteId);
-                    }
-                    resetDeleteState();
-                    closeDeleteModal();
-                    showToast('Terhapus', 'Data berhasil dihapus.', 'success');
-                    playChime('success');
-                    applyFilteringAndSorting();
-                }, 300);
-            }
-
-            function resetDeleteState() {
-                if (btnConfirm) btnConfirm.disabled = false;
-                if (btnText) btnText.innerText = 'Hapus';
-                if (spinner) spinner.classList.add('hidden');
-            }
+            }, 300);
         }
 
         function saveData() {
@@ -1084,11 +734,11 @@
                 record.parkingStand = document.getElementById('arr-parkingStand').value.trim().toUpperCase();
                 record.aibt = document.getElementById('arr-aibt').value.trim();
             } else {
-                record.desk = document.getElementById('dep-desk').value.trim();
+                record.desk = document.getElementById('dep-desk').value.trim().toUpperCase();
                 record.flightNo = document.getElementById('dep-flightNo').value.trim().toUpperCase();
                 record.maskapai = document.getElementById('dep-maskapai').value.trim();
                 record.dos = document.getElementById('dep-dos').value.trim().toUpperCase();
-                record.tipePesawat = document.getElementById('dep-tipePesawat').value.trim();
+                record.tipePesawat = document.getElementById('dep-tipePesawat').value.trim().toUpperCase();
                 record.std = document.getElementById('dep-std').value.trim();
                 record.jamBuka = document.getElementById('dep-jamBuka').value.trim();
                 record.jamTutup = document.getElementById('dep-jamTutup').value.trim();
@@ -1098,39 +748,106 @@
             const btnText = document.getElementById('btnSaveText');
             const spinner = document.getElementById('btnSaveSpinner');
 
-            if (btnSave) btnSave.disabled = true;
-            if (btnText) btnText.innerText = 'Menyimpan...';
-            if (spinner) spinner.classList.remove('hidden');
+            btnSave.disabled = true;
+            btnText.innerText = 'Menyimpan...';
+            spinner.classList.remove('hidden');
 
             if (typeof google !== 'undefined' && google.script && google.script.run) {
                 google.script.run
                     .withSuccessHandler(res => {
-                        resetSave();
+                        resetFormBtn();
                         closeModal();
-                        showToast('Tersimpan', res.message || 'Data disimpan.', 'success');
+                        showToast('Tersimpan', res.message || 'Data berhasil disimpan.', 'success');
                         playChime('success');
                         loadData();
                     })
                     .withFailureHandler(err => {
-                        resetSave();
+                        resetFormBtn();
                         showToast('Gagal', err.toString(), 'error');
                         playChime('error');
                     })
                     .saveFlightData(record);
             } else {
                 setTimeout(() => {
-                    resetSave();
+                    resetFormBtn();
                     closeModal();
-                    showToast('Tersimpan', 'Data berhasil disimpan.', 'success');
+                    showToast('Tersimpan', 'Data berhasil diperbarui.', 'success');
                     playChime('success');
                     loadData();
-                }, 400);
+                }, 800);
             }
 
-            function resetSave() {
-                if (btnSave) btnSave.disabled = false;
-                if (btnText) btnText.innerText = 'Simpan Data';
-                if (spinner) spinner.classList.add('hidden');
+            function resetFormBtn() {
+                btnSave.disabled = false;
+                btnText.innerText = 'Simpan Data';
+                spinner.classList.add('hidden');
+            }
+        }
+
+        let pendingDeleteId = null;
+        function confirmDeleteFlight(id, flightNo) {
+            pendingDeleteId = id;
+            document.getElementById('deleteFlightNoTarget').innerText = flightNo;
+            
+            const backdrop = document.getElementById('deleteModalBackdrop');
+            const modal = document.getElementById('deleteModal');
+            
+            backdrop.classList.remove('hidden');
+            modal.classList.remove('hidden');
+            void modal.offsetWidth;
+            backdrop.classList.remove('opacity-0');
+        }
+
+        function closeDeleteModal() {
+            const backdrop = document.getElementById('deleteModalBackdrop');
+            backdrop.classList.add('opacity-0');
+            
+            setTimeout(() => {
+                backdrop.classList.add('hidden');
+                document.getElementById('deleteModal').classList.add('hidden');
+                pendingDeleteId = null;
+            }, 200);
+        }
+
+        function executeDeleteFlight() {
+            if (!pendingDeleteId) return;
+
+            const btnConfirm = document.getElementById('btnConfirmDelete');
+            const btnText = document.getElementById('btnDeleteText');
+            const spinner = document.getElementById('btnDeleteSpinner');
+
+            btnConfirm.disabled = true;
+            btnText.innerText = 'Menghapus...';
+            spinner.classList.remove('hidden');
+
+            if (typeof google !== 'undefined' && google.script && google.script.run) {
+                google.script.run
+                    .withSuccessHandler(res => {
+                        finishDelete();
+                        showToast('Dihapus', 'Data penerbangan berhasil dihapus.', 'success');
+                        playChime('success');
+                        loadData();
+                    })
+                    .withFailureHandler(err => {
+                        finishDelete();
+                        showToast('Gagal', err.toString(), 'error');
+                        playChime('error');
+                    })
+                    .deleteFlightData(masterType, pendingDeleteId);
+            } else {
+                setTimeout(() => {
+                    finishDelete();
+                    showToast('Dihapus', 'Data penerbangan berhasil dihapus.', 'success');
+                    playChime('success');
+                    loadData();
+                }, 600);
+            }
+
+            function finishDelete() {
+                btnConfirm.disabled = false;
+                btnText.innerText = 'Ya, Hapus';
+                spinner.classList.add('hidden');
+                closeDeleteModal();
             }
         }
 
@@ -1147,35 +864,27 @@
             const toast = document.getElementById('toast');
             const iconBox = document.getElementById('toastIcon');
             const progressBar = document.getElementById('toastProgressBar');
-            const titleEl = document.getElementById('toastTitle');
-            const msgEl = document.getElementById('toastMessage');
-
-            if (!toast || !iconBox || !progressBar || !titleEl || !msgEl) return;
-
-            titleEl.innerText = title;
-            msgEl.innerText = message;
+            
+            document.getElementById('toastTitle').innerText = title;
+            document.getElementById('toastMessage').innerText = message;
 
             clearTimeout(toastTimer);
-            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.remove('-translate-y-24', 'opacity-0');
             progressBar.classList.remove('animate-toast-bar');
             void progressBar.offsetWidth;
 
             if (type === 'success') {
                 iconBox.innerHTML = '<i class="fa-solid fa-check"></i>';
-                iconBox.className = "flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-lg text-white bg-emerald-500 text-xs";
-                progressBar.className = "absolute bottom-0 left-0 h-0.5 bg-emerald-500 animate-toast-bar";
+                iconBox.className = "flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-white bg-emerald-500 text-sm";
+                progressBar.className = "absolute bottom-0 left-0 h-1 bg-emerald-500 animate-toast-bar";
             } else if (type === 'error') {
                 iconBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
-                iconBox.className = "flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-lg text-white bg-rose-500 text-xs";
-                progressBar.className = "absolute bottom-0 left-0 h-0.5 bg-rose-500 animate-toast-bar";
-            } else {
-                iconBox.innerHTML = '<i class="fa-solid fa-circle-info"></i>';
-                iconBox.className = "flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-lg text-white bg-blue-500 text-xs";
-                progressBar.className = "absolute bottom-0 left-0 h-0.5 bg-blue-500 animate-toast-bar";
+                iconBox.className = "flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-white bg-rose-500 text-sm";
+                progressBar.className = "absolute bottom-0 left-0 h-1 bg-rose-500 animate-toast-bar";
             }
 
             toastTimer = setTimeout(() => {
-                toast.classList.add('translate-y-20', 'opacity-0');
+                toast.classList.add('-translate-y-24', 'opacity-0');
             }, 3500);
         }
     </script>
