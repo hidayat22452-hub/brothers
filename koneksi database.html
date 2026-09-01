@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Koneksi Database</title>
+</head>
+<body>
+    <div id="data-container">Memuat data...</div>
+
+    <script>
+        // Ganti dengan URL Web App Apps Script Anda
+        const urlAPI = "https://script.google.com/macros/s/AKfycbz4ccLBjbAqr3ARvsi2Aub8wdcSOKmiMgnpCXrWyGyTfQ2o3HxwilHRD-yPmBzUvf3i/exec"; 
+
+        fetch(urlAPI)
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                // Proses data dan tampilkan ke HTML di sini
+                document.getElementById('data-container').innerText = JSON.stringify(data);
+            })
+            .catch(error => console.error('Error:', error));
+    </script>
+</body>
+</html>
