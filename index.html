@@ -19,19 +19,12 @@
             darkMode: 'class',
             theme: {
                 extend: {
-                    colors: {
-                        slate: {
-                            925: '#0b0f19',
-                            950: '#070a12',
-                        }
-                    },
+                    colors: { slate: { 925: '#0b0f19', 950: '#070a12' } },
                     fontFamily: {
                         sans: ['Plus Jakarta Sans', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
                         mono: ['JetBrains Mono', 'monospace'],
                     },
-                    spacing: {
-                        'safe-bottom': 'env(safe-area-inset-bottom)',
-                    }
+                    spacing: { 'safe-bottom': 'env(safe-area-inset-bottom)' }
                 }
             }
         }
@@ -44,16 +37,11 @@
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
             -webkit-tap-highlight-color: transparent;
-            overscroll-behavior-y: none; /* Mencegah pull-to-refresh di Chrome/Safari Mobile */
-            user-select: none; /* Mencegah seleksi teks secara tidak sengaja */
+            overscroll-behavior-y: none;
+            user-select: none;
         }
-
-        /* Mengizinkan seleksi teks hanya pada input */
-        input, textarea {
-            user-select: auto;
-        }
-
-        /* Menyembunyikan scrollbar agar terasa seperti Native App */
+        input, textarea { user-select: auto; }
+        
         ::-webkit-scrollbar { width: 0px; background: transparent; display: none; }
         * { scrollbar-width: none; }
         
@@ -73,7 +61,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
         .animate-fade { animation: fadeIn 0.2s ease-out forwards; }
-
         @keyframes shrinkProgress {
             from { width: 100%; }
             to { width: 0%; }
@@ -82,10 +69,8 @@
     </style>
 </head>
 
-<!-- Layout fixed agar aplikasi tidak scrollable secara global, persis seperti Native App -->
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 fixed inset-0 flex flex-col antialiased">
 
-    <!-- Header Atas -->
     <header class="glass-header border-b border-slate-200/80 dark:border-slate-800/80 z-30 px-4 py-3 flex justify-between items-center gap-2 flex-shrink-0 pt-[calc(env(safe-area-inset-top)+0.75rem)]">
         <div class="flex items-center gap-2.5 flex-1 min-w-0">
             <div class="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold shadow-md shadow-blue-600/20 flex-shrink-0">
@@ -98,12 +83,14 @@
         </div>
 
         <div class="flex items-center gap-2 flex-shrink-0">
-            <!-- Waktu Server / Jam -->
             <div class="bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-2 py-1.5 rounded-lg flex items-center gap-1.5">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                 <span id="currentTime" class="text-xs font-mono font-bold tracking-wider text-slate-700 dark:text-slate-300">00:00</span>
             </div>
-
+            <!-- Tombol Embed Web App Google Apps Script -->
+            <button onclick="openEmbedModal()" title="Buka Embed Web App" class="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 flex items-center justify-center text-xs transition-colors active:scale-95">
+                <i class="fa-solid fa-up-right-from-square"></i>
+            </button>
             <button onclick="loadData()" title="Sinkronisasi" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs transition-colors active:scale-95">
                 <i class="fa-solid fa-rotate-right"></i>
             </button>
@@ -125,23 +112,16 @@
                 <i class="fa-solid fa-circle-xmark"></i>
             </button>
         </div>
-
-        <!-- Filter Status Horizontal Scroll -->
         <div class="flex items-center gap-2 overflow-x-auto scroll-smooth w-full pb-1" id="statusFilterTabs">
             <!-- Filter dinamis dirender via JS -->
         </div>
     </div>
 
-    <!-- min-h-0 penting agar flex tidak melebihi viewport, overflow-y-auto membatasi scroll di area ini -->
     <main class="flex-1 min-h-0 relative bg-slate-50 dark:bg-slate-950">
-        
-        <!-- Loading Indicator -->
         <div id="loadingOverlay" class="absolute inset-0 bg-slate-50/80 dark:bg-slate-950/80 backdrop-blur-sm z-20 flex flex-col items-center justify-center">
             <div class="w-8 h-8 border-3 border-blue-200 dark:border-blue-900 border-t-blue-600 rounded-full animate-spin"></div>
             <p class="text-xs font-semibold text-slate-600 dark:text-slate-300 mt-3">Sinkronisasi data...</p>
         </div>
-
-        <!-- Empty State -->
         <div id="emptyState" class="hidden absolute inset-0 z-10 flex flex-col items-center justify-center text-slate-400 p-6 text-center">
             <div class="w-16 h-16 mb-4 rounded-full bg-slate-200/50 dark:bg-slate-800/50 flex items-center justify-center text-slate-400 dark:text-slate-500">
                 <i class="fa-solid fa-inbox text-2xl"></i>
@@ -149,61 +129,45 @@
             <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300">Tidak Ada Data</h3>
             <p class="text-xs text-slate-500 mt-1 max-w-[220px]">Tidak ada penerbangan yang sesuai dengan filter atau pencarian Anda.</p>
         </div>
-
-        <!-- Card List Container -->
         <div id="mobileCardList" class="h-full overflow-y-auto px-4 py-3 space-y-3 pb-24">
             <!-- Data penerbangan dimuat di sini -->
         </div>
-
     </main>
 
-    
-    <!-- Tombol FAB untuk Tambah Data -->
+    <!-- Floating Action Button -->
     <button onclick="openModal()" class="fixed bottom-24 right-5 z-40 w-14 h-14 bg-blue-600 active:bg-blue-700 text-white rounded-full shadow-[0_8px_16px_rgba(37,99,235,0.4)] flex items-center justify-center transition-transform transform active:scale-95">
         <i class="fa-solid fa-plus text-xl"></i>
     </button>
 
-    <!-- Navigasi Bawah ala Mobile App -->
     <nav class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex-shrink-0 z-30 pb-[env(safe-area-inset-bottom)]">
         <div class="flex items-center justify-around h-16 px-2">
-            <button onclick="setMasterType('ARRIVAL')" id="navArrival" class="flex-1 h-full flex flex-col items-center justify-center gap-1 text-blue-600 dark:text-blue-500">
-                <i class="fa-solid fa-plane-arrival text-lg mb-0.5"></i>
-                <span class="text-[10px] font-bold">Kedatangan</span>
+            <button onclick="setMasterType('ARRIVAL')" id="navArrival" class="flex-1 h-full flex flex-col items-center justify-center gap-1 text-blue-600 dark:text-blue-500 font-bold transition-all">
+                <i class="fa-solid fa-plane-arrival text-xl mb-0.5 transform -translate-y-1 transition-transform"></i>
+                <span class="text-[10px]">Kedatangan</span>
             </button>
-            <button onclick="setMasterType('DEPARTURE')" id="navDeparture" class="flex-1 h-full flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
+            <button onclick="setMasterType('DEPARTURE')" id="navDeparture" class="flex-1 h-full flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 font-semibold transition-all">
                 <i class="fa-solid fa-plane-departure text-lg mb-0.5"></i>
-                <span class="text-[10px] font-semibold">Keberangkatan</span>
+                <span class="text-[10px]">Keberangkatan</span>
             </button>
         </div>
     </nav>
 
     <div id="modalBackdrop" onclick="closeModal()" class="hidden fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 transition-opacity opacity-0"></div>
     <div id="formModal" class="hidden fixed inset-x-0 bottom-0 z-50 transform translate-y-full transition-transform duration-300 ease-out">
-        <!-- Struktur Bottom Sheet -->
         <div class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 rounded-t-3xl shadow-2xl flex flex-col max-h-[88vh] pb-[env(safe-area-inset-bottom)]">
-            
-            <!-- Drag Handle Indikator -->
             <div class="w-full flex justify-center pt-3 pb-2" onclick="closeModal()">
                 <div class="w-12 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-full"></div>
             </div>
-
-            <!-- Header Form -->
             <div class="flex items-center justify-between px-5 pb-3 border-b border-slate-100 dark:border-slate-800 flex-shrink-0">
                 <h3 id="modalTitleText" class="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
                     <i class="fa-solid fa-pen-to-square text-blue-600"></i>
                     <span id="modalHeaderLabel">Entri Kedatangan</span>
                 </h3>
             </div>
-
-            <!-- Form Content (Bisa di-scroll jika isinya panjang) -->
             <div class="p-5 overflow-y-auto scroll-smooth flex-1">
                 <form id="flightForm" onsubmit="event.preventDefault(); saveData();" class="space-y-4">
                     <input type="hidden" id="recordId">
-                    
-                    <div id="dynamicFormFields" class="space-y-4">
-                        <!-- Field dirender dari JS -->
-                    </div>
-
+                    <div id="dynamicFormFields" class="space-y-4"></div>
                     <div class="pt-4 pb-2">
                         <button type="submit" id="btnSave" class="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2 transition-transform active:scale-95">
                             <span id="btnSaveSpinner" class="hidden w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
@@ -225,41 +189,58 @@
             <p class="text-xs text-slate-500 dark:text-slate-400 mb-6 leading-relaxed">
                 Anda akan menghapus data penerbangan <span id="deleteFlightNoTarget" class="font-mono font-bold text-rose-600 dark:text-rose-400"></span>. Data yang dihapus tidak dapat dikembalikan.
             </p>
-            <div class="flex gap-3">
-                <button type="button" onclick="closeDeleteModal()" class="flex-1 py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold active:scale-95 transition-transform">Batal</button>
-                <button type="button" id="btnConfirmDelete" onclick="executeDeleteFlight()" class="flex-1 py-3 bg-rose-600 text-white rounded-xl text-xs font-bold shadow-md shadow-rose-600/30 flex items-center justify-center gap-2 active:scale-95 transition-transform">
-                    <span id="btnDeleteSpinner" class="hidden w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+            <div class="flex items-center gap-2">
+                <button type="button" onclick="closeDeleteModal()" class="flex-1 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-semibold transition-colors">Batal</button>
+                <button type="button" id="btnConfirmDelete" onclick="executeDeleteFlight()" class="flex-1 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition-colors shadow-lg shadow-rose-600/30 flex items-center justify-center gap-2">
+                    <span id="btnDeleteSpinner" class="hidden w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                     <span id="btnDeleteText">Ya, Hapus</span>
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Toast diletakkan di bagian atas pada mobile agar tidak tertutup keyboard atau bottom nav -->
-    <div id="toast" class="fixed top-4 inset-x-4 z-[60] transition-all duration-300 transform -translate-y-24 opacity-0 pointer-events-none">
-        <div class="bg-slate-900 dark:bg-white text-white dark:text-slate-900 p-3 rounded-xl shadow-lg flex items-center gap-3 relative overflow-hidden pointer-events-auto max-w-sm mx-auto">
-            <div id="toastIcon" class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-white bg-emerald-500 text-sm">
+    <div id="embedModalBackdrop" onclick="closeEmbedModal()" class="hidden fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 transition-opacity opacity-0"></div>
+    <div id="embedModal" class="hidden fixed inset-x-2 top-4 bottom-4 md:inset-x-12 md:top-8 md:bottom-8 z-50 flex flex-col bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800">
+        <div class="px-4 py-3 bg-slate-100 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
+            <div class="flex items-center gap-2 min-w-0">
+                <i class="fa-solid fa-database text-blue-600 text-xs"></i>
+                <h3 class="text-xs font-bold truncate text-slate-900 dark:text-white">Google Apps Script Live Embed</h3>
+            </div>
+            <div class="flex items-center gap-2">
+                <a href="https://script.google.com/macros/s/AKfycbz5GIUwTqfh9dCKI27BCyk8qYa-PM7nZqqzaLEd_ojuWcgYLp1e2EfvarwnMKYI1pc/exec" target="_blank" rel="noopener noreferrer" class="text-[10px] font-bold text-blue-600 dark:text-blue-400 underline flex items-center gap-1">
+                    Tab Baru <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+                </a>
+                <button onclick="closeEmbedModal()" class="w-7 h-7 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs active:scale-95">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+        </div>
+        <div class="flex-1 w-full bg-slate-50 dark:bg-slate-950 relative">
+            <iframe id="gasIframe" src="" class="w-full h-full border-0" title="Google Apps Script Web App"></iframe>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 z-[60] transition-all duration-300 transform -translate-y-24 opacity-0 pointer-events-none max-w-xs w-full px-4">
+        <div class="bg-slate-900 dark:bg-white text-white dark:text-slate-900 p-3.5 rounded-2xl shadow-2xl flex items-center gap-3 border border-slate-800 dark:border-slate-200 relative overflow-hidden pointer-events-auto">
+            <div id="toastIcon" class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-xl text-white bg-emerald-500 text-sm">
                 <i class="fa-solid fa-check"></i>
             </div>
-            <div class="flex-1 pr-2">
-                <h4 id="toastTitle" class="text-xs font-bold">Berhasil</h4>
-                <p id="toastMessage" class="text-[11px] opacity-80 mt-0.5 leading-tight">Aksi berhasil dilakukan.</p>
+            <div class="flex-1 min-w-0 pr-1">
+                <h4 id="toastTitle" class="text-xs font-bold truncate">Berhasil</h4>
+                <p id="toastMessage" class="text-[11px] opacity-80 leading-snug truncate">Data penerbangan diperbarui.</p>
             </div>
-            <div id="toastProgressBar" class="absolute bottom-0 left-0 h-1 bg-emerald-500"></div>
+            <div id="toastProgressBar" class="absolute bottom-0 left-0 h-1 bg-emerald-500 w-full"></div>
         </div>
     </div>
 
     <script>
-        // --- KONFIGURASI DATABASE GOOGLE APPS SCRIPT ---
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz4ccLBjbAqr3ARvsi2Aub8wdcSOKmiMgnpCXrWyGyTfQ2o3HxwilHRD-yPmBzUvf3i/exec';
+        const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbz5GIUwTqfh9dCKI27BCyk8qYa-PM7nZqqzaLEd_ojuWcgYLp1e2EfvarwnMKYI1pc/exec';
 
-        let masterType = 'ARRIVAL'; // 'ARRIVAL' or 'DEPARTURE'
+        let masterType = 'ARRIVAL';
         let arrivalDataCache = [];
         let departureDataCache = [];
         let filteredData = [];
         let activeStatusFilter = 'ALL';
-
-        // Efek Suara
         let synth;
         try { synth = new Tone.Synth().toDestination(); } catch(e) {}
 
@@ -275,11 +256,9 @@
             updateClock();
             setInterval(updateClock, 1000);
             loadData();
-            // Auto reload tiap 30 detik (silent)
             setInterval(() => loadData(true), 30000);
         });
 
-        // Menampilkan Jam Real-Time
         function updateClock() {
             const now = new Date();
             const hrs = String(now.getHours()).padStart(2, '0');
@@ -287,13 +266,11 @@
             const clockEl = document.getElementById('currentTime');
             if (clockEl) clockEl.innerText = `${hrs}:${mins}`;
             
-            // Re-render filtering status setiap awal menit
             if (now.getSeconds() === 0 && (arrivalDataCache.length > 0 || departureDataCache.length > 0)) {
                 applyFilteringAndSorting();
             }
         }
 
-        // Navigasi Bottom Tab
         function setMasterType(type) {
             masterType = type;
             activeStatusFilter = 'ALL';
@@ -303,31 +280,36 @@
             const headerSub = document.getElementById('headerSubtitle');
 
             if (masterType === 'ARRIVAL') {
-                navArr.className = "flex-1 h-full flex flex-col items-center justify-center gap-1 text-blue-600 dark:text-blue-500 font-bold transition-all";
-                navArr.innerHTML = `<i class="fa-solid fa-plane-arrival text-xl mb-0.5 transform -translate-y-1 transition-transform"></i><span class="text-[10px]">Kedatangan</span>`;
-                
-                navDep.className = "flex-1 h-full flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 font-semibold transition-all";
-                navDep.innerHTML = `<i class="fa-solid fa-plane-departure text-lg mb-0.5"></i><span class="text-[10px]">Keberangkatan</span>`;
-                
+                if (navArr) {
+                    navArr.className = "flex-1 h-full flex flex-col items-center justify-center gap-1 text-blue-600 dark:text-blue-500 font-bold transition-all";
+                    navArr.innerHTML = `<i class="fa-solid fa-plane-arrival text-xl mb-0.5 transform -translate-y-1 transition-transform"></i><span class="text-[10px]">Kedatangan</span>`;
+                }
+                if (navDep) {
+                    navDep.className = "flex-1 h-full flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 font-semibold transition-all";
+                    navDep.innerHTML = `<i class="fa-solid fa-plane-departure text-lg mb-0.5"></i><span class="text-[10px]">Keberangkatan</span>`;
+                }
                 if (headerSub) headerSub.innerText = 'Kedatangan (Arrival)';
             } else {
-                navDep.className = "flex-1 h-full flex flex-col items-center justify-center gap-1 text-blue-600 dark:text-blue-500 font-bold transition-all";
-                navDep.innerHTML = `<i class="fa-solid fa-plane-departure text-xl mb-0.5 transform -translate-y-1 transition-transform"></i><span class="text-[10px]">Keberangkatan</span>`;
-                
-                navArr.className = "flex-1 h-full flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 font-semibold transition-all";
-                navArr.innerHTML = `<i class="fa-solid fa-plane-arrival text-lg mb-0.5"></i><span class="text-[10px]">Kedatangan</span>`;
-                
+                if (navDep) {
+                    navDep.className = "flex-1 h-full flex flex-col items-center justify-center gap-1 text-blue-600 dark:text-blue-500 font-bold transition-all";
+                    navDep.innerHTML = `<i class="fa-solid fa-plane-departure text-xl mb-0.5 transform -translate-y-1 transition-transform"></i><span class="text-[10px]">Keberangkatan</span>`;
+                }
+                if (navArr) {
+                    navArr.className = "flex-1 h-full flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 font-semibold transition-all";
+                    navArr.innerHTML = `<i class="fa-solid fa-plane-arrival text-lg mb-0.5"></i><span class="text-[10px]">Kedatangan</span>`;
+                }
                 if (headerSub) headerSub.innerText = 'Keberangkatan (Departure)';
             }
 
-            document.getElementById('searchInput').value = '';
-            document.getElementById('clearSearchBtn').classList.add('hidden');
-
+            const searchIn = document.getElementById('searchInput');
+            if (searchIn) searchIn.value = '';
+            const clearBtn = document.getElementById('clearSearchBtn');
+            if (clearBtn) clearBtn.classList.add('hidden');
+            
             renderFilterTabs();
             applyFilteringAndSorting();
         }
 
-        // Render Status Tabs (Kapsul Filter)
         function renderFilterTabs() {
             const container = document.getElementById('statusFilterTabs');
             if (!container) return;
@@ -350,7 +332,7 @@
                         Semua <span id="badgeCountALL" class="ml-1 opacity-75 font-mono text-[10px]">0</span>
                     </button>
                     <button onclick="setStatusFilter('OPEN')" data-tab="OPEN" class="tab-btn px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 transition-colors">
-                        Check-in Open <span id="badgeCountOPEN" class="ml-1 opacity-75 font-mono text-[10px]">0</span>
+                        Open <span id="badgeCountOPEN" class="ml-1 opacity-75 font-mono text-[10px]">0</span>
                     </button>
                     <button onclick="setStatusFilter('BOARDING')" data-tab="BOARDING" class="tab-btn px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 transition-colors">
                         Boarding <span id="badgeCountBOARDING" class="ml-1 opacity-75 font-mono text-[10px]">0</span>
@@ -362,31 +344,43 @@
             }
         }
 
-        // Mengambil Data dari API Google Script
         function loadData(isSilent = false) {
             const overlay = document.getElementById('loadingOverlay');
             if (!isSilent && overlay) overlay.classList.remove('hidden');
             
-            // Fetch dengan param action=read
-            fetch(SCRIPT_URL + "?action=read")
-                .then(response => {
-                    if (!response.ok) throw new Error("Terjadi kesalahan jaringan.");
-                    return response.json();
-                })
-                .then(data => onDataLoaded(data, isSilent))
-                .catch(err => onDataLoadError(err, isSilent));
+            if (typeof google !== 'undefined' && google.script && google.script.run) {
+                google.script.run
+                    .withSuccessHandler(data => onDataLoaded(data, isSilent))
+                    .withFailureHandler(err => onDataLoadError(err, isSilent))
+                    .getAllFlightOpsData();
+            } else {
+                setTimeout(() => {
+                    const now = new Date();
+                    const fmt = (d) => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+                    const addMins = (m) => new Date(now.getTime() + m * 60000);
+
+                    const mockArr = [
+                        {id: 1, type: 'ARRIVAL', groundHandling: 'GAPURA', noFlight: 'GA 183', origin: 'KNO', bcbNo: 'BCB-001', parkingStand: 'B3', aibt: fmt(addMins(-15))},
+                        {id: 2, type: 'ARRIVAL', groundHandling: 'JAS', noFlight: 'SQ 950', origin: 'SIN', bcbNo: '-', parkingStand: 'A2', aibt: ''}
+                    ];
+                    
+                    const mockDep = [
+                        { id: 101, type: 'DEPARTURE', desk: 'D10-D12', maskapai: 'Garuda Indonesia', flightNo: 'GA 182', dos: 'CGK-KNO', tipePesawat: 'B737-800', jamBuka: fmt(addMins(-150)), jamTutup: fmt(addMins(-20)), std: fmt(addMins(20)) },
+                        { id: 102, type: 'DEPARTURE', desk: 'E01-E04', maskapai: 'Batik Air', flightNo: 'ID 6872', dos: 'CGK-DPS', tipePesawat: 'A320', jamBuka: fmt(addMins(-50)), jamTutup: fmt(addMins(15)), std: fmt(addMins(55)) }
+                    ];
+                    onDataLoaded({ arrival: mockArr, departure: mockDep }, isSilent);
+                }, 600);
+            }
         }
 
         function onDataLoaded(res, isSilent) {
             arrivalDataCache = res.arrival || [];
             departureDataCache = res.departure || [];
-            
-            // Render jika pertama kali load (bukan interval diam-diam)
-            if (!document.getElementById('statusFilterTabs').innerHTML.trim()) {
+            const tabs = document.getElementById('statusFilterTabs');
+            if (tabs && !tabs.innerHTML.trim()) {
                 renderFilterTabs();
             }
             applyFilteringAndSorting();
-            
             const overlay = document.getElementById('loadingOverlay');
             if (!isSilent && overlay) overlay.classList.add('hidden');
         }
@@ -412,53 +406,18 @@
                 const tutup = timeToMinutes(item.jamTutup);
                 const departure = timeToMinutes(item.std);
 
-                // Perhitungan Counter Buka (berjalan 3 jam)
                 if (buka !== -1 && tutup !== -1 && cur >= buka && cur <= tutup) {
                     const sisaMenit = tutup - cur;
-                    return { 
-                        key: 'OPEN', 
-                        label: 'OPEN', 
-                        bg: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/60', 
-                        dot: 'bg-emerald-500 animate-pulse', 
-                        info: `Tutup dlm ${sisaMenit}m`, 
-                        priority: 1 
-                    };
+                    return { key: 'OPEN', label: 'OPEN', bg: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/60', dot: 'bg-emerald-500 animate-pulse', info: `Tutup dlm ${sisaMenit}m`, priority: 1 };
                 }
-
-                // Setelah Tutup, menuju STD
                 if (tutup !== -1 && cur > tutup && (departure === -1 || cur <= departure)) {
-                    return { 
-                        key: 'BOARDING', 
-                        label: 'BOARDING', 
-                        bg: 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 border-amber-200 dark:border-amber-800/60', 
-                        dot: 'bg-amber-500', 
-                        info: 'Counter Tutup', 
-                        priority: 2 
-                    };
+                    return { key: 'BOARDING', label: 'BOARDING', bg: 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 border-amber-200 dark:border-amber-800/60', dot: 'bg-amber-500', info: 'Counter Tutup', priority: 2 };
                 }
-
-                // Lewat dari STD
                 if (departure !== -1 && cur > departure) {
-                    return { 
-                        key: 'DEPARTED', 
-                        label: 'DEPARTED', 
-                        bg: 'bg-slate-200 text-slate-500 dark:bg-slate-800 dark:text-slate-400 border-slate-300 dark:border-slate-700', 
-                        dot: 'bg-slate-400', 
-                        info: 'Berangkat', 
-                        priority: 4 
-                    };
+                    return { key: 'DEPARTED', label: 'DEPARTED', bg: 'bg-slate-200 text-slate-500 dark:bg-slate-800 dark:text-slate-400 border-slate-300 dark:border-slate-700', dot: 'bg-slate-400', info: 'Berangkat', priority: 4 };
                 }
-
-                // Belum waktunya buka
                 const sisaBuka = buka - cur;
-                return { 
-                    key: 'UPCOMING', 
-                    label: 'UPCOMING', 
-                    bg: 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 border-blue-200 dark:border-blue-800/60', 
-                    dot: 'bg-blue-500', 
-                    info: (sisaBuka > 0) ? `Buka dlm ${sisaBuka}m` : `Buka ${item.jamBuka || '--:--'}`, 
-                    priority: 3 
-                };
+                return { key: 'UPCOMING', label: 'UPCOMING', bg: 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 border-blue-200 dark:border-blue-800/60', dot: 'bg-blue-500', info: (sisaBuka > 0) ? `Buka dlm ${sisaBuka}m` : `Buka ${item.jamBuka || '--:--'}`, priority: 3 };
             }
         }
 
@@ -468,14 +427,13 @@
             return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
         }
 
-        // Otomatis Hitung Buka & Tutup Counter dari STD
         function autoCalculateDepTimes(stdVal) {
             if (!stdVal) return;
             let val = stdVal.trim();
-            // Dukungan format cepat, misal "0645" menjadi "06:45"
             if (val.length === 4 && !val.includes(':') && !isNaN(val)) {
                 val = val.substring(0, 2) + ':' + val.substring(2);
-                document.getElementById('dep-std').value = val;
+                const stdInput = document.getElementById('dep-std');
+                if (stdInput) stdInput.value = val;
             }
             if (/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(val)) {
                 const parts = val.split(':');
@@ -483,22 +441,21 @@
                 const mins = parseInt(parts[1], 10);
                 const totalMins = hours * 60 + mins;
 
-                // Open: -3 Jam (180 menit)
                 let openMins = (totalMins - 180 + 1440) % 1440;
                 let openH = String(Math.floor(openMins / 60)).padStart(2, '0');
                 let openM = String(openMins % 60).padStart(2, '0');
 
-                // Close: -40 Menit
                 let closeMins = (totalMins - 40 + 1440) % 1440;
                 let closeH = String(Math.floor(closeMins / 60)).padStart(2, '0');
                 let closeM = String(closeMins % 60).padStart(2, '0');
 
-                document.getElementById('dep-jamBuka').value = `${openH}:${openM}`;
-                document.getElementById('dep-jamTutup').value = `${closeH}:${closeM}`;
+                const bukaInput = document.getElementById('dep-jamBuka');
+                const tutupInput = document.getElementById('dep-jamTutup');
+                if (bukaInput) bukaInput.value = `${openH}:${openM}`;
+                if (tutupInput) tutupInput.value = `${closeH}:${closeM}`;
             }
         }
 
-        // Handle Filter
         function setStatusFilter(statusKey) {
             activeStatusFilter = statusKey;
             document.querySelectorAll('#statusFilterTabs button').forEach(btn => {
@@ -512,20 +469,25 @@
         }
 
         function handleSearch() {
-            const val = document.getElementById('searchInput').value.trim();
-            document.getElementById('clearSearchBtn').classList.toggle('hidden', val === '');
+            const input = document.getElementById('searchInput');
+            const clearBtn = document.getElementById('clearSearchBtn');
+            if (input && clearBtn) {
+                const val = input.value.trim();
+                clearBtn.classList.toggle('hidden', val === '');
+            }
             applyFilteringAndSorting();
         }
+
         function clearSearch() {
-            document.getElementById('searchInput').value = '';
-            document.getElementById('clearSearchBtn').classList.add('hidden');
+            const input = document.getElementById('searchInput');
+            const clearBtn = document.getElementById('clearSearchBtn');
+            if (input) input.value = '';
+            if (clearBtn) clearBtn.classList.add('hidden');
             applyFilteringAndSorting();
         }
 
         function applyFilteringAndSorting() {
             const currentList = masterType === 'ARRIVAL' ? arrivalDataCache : departureDataCache;
-            
-            // Hitung lencana filter
             const counts = { ALL: currentList.length };
             currentList.forEach(item => {
                 const st = calculateFlightStatus(item).key;
@@ -536,7 +498,9 @@
                 if (badge) badge.innerText = counts[key];
             });
 
-            const term = document.getElementById('searchInput').value.toLowerCase().trim();
+            const searchIn = document.getElementById('searchInput');
+            const term = searchIn ? searchIn.value.toLowerCase().trim() : '';
+
             filteredData = currentList.filter(item => {
                 const status = calculateFlightStatus(item);
                 if (activeStatusFilter !== 'ALL' && status.key !== activeStatusFilter) return false;
@@ -549,9 +513,7 @@
                 return true;
             });
 
-            // Urutkan berdasarkan prioritas status
             filteredData.sort((a, b) => calculateFlightStatus(a).priority - calculateFlightStatus(b).priority);
-
             renderMobileCards();
         }
 
@@ -574,7 +536,6 @@
                 const card = document.createElement('div');
                 card.className = "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm transition-transform active:scale-[0.98]";
                 
-                // Ekspansi Kartu
                 card.onclick = () => {
                     const detail = document.getElementById(`card-detail-${row.id}`);
                     if(detail) detail.classList.toggle('hidden');
@@ -602,8 +563,6 @@
                                 <span class="font-mono font-extrabold text-sm text-slate-900 dark:text-white">${row.aibt || '--:--'}</span>
                             </div>
                         </div>
-                        
-                        <!-- Rincian Tersembunyi (Expandable) -->
                         <div id="card-detail-${row.id}" class="hidden mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 animate-fade">
                             <div class="flex flex-col gap-2 mb-3">
                                 <div class="bg-slate-50 dark:bg-slate-950/50 p-2.5 rounded-xl text-xs flex justify-between items-center border border-slate-100 dark:border-slate-800/80">
@@ -646,8 +605,6 @@
                                 <span class="font-mono font-extrabold text-sm text-slate-900 dark:text-white">${row.std || '--:--'}</span>
                             </div>
                         </div>
-                        
-                        <!-- Rincian Tersembunyi (Expandable) -->
                         <div id="card-detail-${row.id}" class="hidden mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 animate-fade">
                             <div class="grid grid-cols-2 gap-2 mb-3">
                                 <div class="bg-slate-50 dark:bg-slate-950/50 p-2.5 rounded-xl text-[10px] flex flex-col gap-1 border border-slate-100 dark:border-slate-800/80">
@@ -670,7 +627,6 @@
                         </div>
                     `;
                 }
-
                 container.appendChild(card);
             });
         }
@@ -678,7 +634,8 @@
         function openModal(id = null) {
             const form = document.getElementById('flightForm');
             if (form) form.reset();
-            document.getElementById('recordId').value = '';
+            const recEl = document.getElementById('recordId');
+            if (recEl) recEl.value = '';
             
             const headerLabel = document.getElementById('modalHeaderLabel');
             const dynamicFields = document.getElementById('dynamicFormFields');
@@ -686,117 +643,116 @@
             const record = id !== null ? currentList.find(r => r.id === id) : null;
 
             if (masterType === 'ARRIVAL') {
-                headerLabel.innerText = record ? 'Edit Kedatangan' : 'Entri Kedatangan';
-                dynamicFields.innerHTML = `
-                    <div class="space-y-3">
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-500 mb-1.5 px-1">No Flight & Ground Handling</label>
-                            <div class="flex gap-2">
-                                <input type="text" id="arr-noFlight" required class="w-3/5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-mono font-bold outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all uppercase" placeholder="GA 183">
-                                <input type="text" id="arr-groundHandling" required class="w-2/5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-semibold outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all uppercase" placeholder="GAPURA">
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-2">
+                if (headerLabel) headerLabel.innerText = record ? 'Edit Kedatangan' : 'Entri Kedatangan';
+                if (dynamicFields) {
+                    dynamicFields.innerHTML = `
+                        <div class="space-y-3">
                             <div>
-                                <label class="block text-[11px] font-bold text-slate-500 mb-1.5 px-1">Origin (Asal)</label>
-                                <input type="text" id="arr-origin" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-mono font-bold outline-none focus:border-blue-500 transition-all uppercase" placeholder="KNO">
-                            </div>
-                            <div>
-                                <label class="block text-[11px] font-bold text-slate-500 mb-1.5 px-1">Parking Stand</label>
-                                <input type="text" id="arr-parkingStand" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-mono font-bold outline-none focus:border-blue-500 transition-all uppercase" placeholder="B3">
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-2">
-                            <div>
-                                <label class="block text-[11px] font-bold text-slate-500 mb-1.5 px-1">BCB No</label>
-                                <input type="text" id="arr-bcbNo" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-mono font-bold outline-none focus:border-blue-500 transition-all uppercase" placeholder="BCB-001">
-                            </div>
-                            <div>
-                                <label class="block text-[11px] font-bold text-slate-500 mb-1.5 px-1 text-blue-600 dark:text-blue-400">AIBT (Jam Tiba)</label>
-                                <input type="time" id="arr-aibt" class="w-full bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 rounded-xl px-4 py-3 text-sm font-mono font-bold outline-none focus:border-blue-500 transition-all text-center">
-                            </div>
-                        </div>
-                    </div>
-                `;
-
-                if (record) {
-                    document.getElementById('recordId').value = record.id;
-                    document.getElementById('arr-groundHandling').value = record.groundHandling || '';
-                    document.getElementById('arr-noFlight').value = record.noFlight || '';
-                    document.getElementById('arr-origin').value = record.origin || '';
-                    document.getElementById('arr-bcbNo').value = record.bcbNo || '';
-                    document.getElementById('arr-parkingStand').value = record.parkingStand || '';
-                    document.getElementById('arr-aibt').value = record.aibt || '';
-                }
-            } else {
-                headerLabel.innerText = record ? 'Edit Keberangkatan' : 'Entri Keberangkatan';
-                dynamicFields.innerHTML = `
-                    <div class="space-y-3">
-                        <div class="grid grid-cols-2 gap-2">
-                            <div>
-                                <label class="block text-[11px] font-bold text-slate-500 mb-1.5 px-1">No Flight</label>
-                                <input type="text" id="dep-flightNo" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-mono font-bold outline-none focus:border-blue-500 transition-all uppercase" placeholder="GA 182">
-                            </div>
-                            <div>
-                                <label class="block text-[11px] font-bold text-slate-500 mb-1.5 px-1">Desk Counter</label>
-                                <input type="text" id="dep-desk" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-semibold outline-none focus:border-blue-500 transition-all uppercase" placeholder="D10-D12">
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-500 mb-1.5 px-1">Maskapai</label>
-                            <input type="text" id="dep-maskapai" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-semibold outline-none focus:border-blue-500 transition-all" placeholder="Garuda Indonesia">
-                        </div>
-                        <div class="grid grid-cols-2 gap-2">
-                            <div>
-                                <label class="block text-[11px] font-bold text-slate-500 mb-1.5 px-1">Rute / DOS</label>
-                                <input type="text" id="dep-dos" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-mono font-bold outline-none focus:border-blue-500 transition-all uppercase" placeholder="CGK-KNO">
-                            </div>
-                            <div>
-                                <label class="block text-[11px] font-bold text-slate-500 mb-1.5 px-1">Tipe Pesawat</label>
-                                <input type="text" id="dep-tipePesawat" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-semibold outline-none focus:border-blue-500 transition-all uppercase" placeholder="B737-800">
-                            </div>
-                        </div>
-                        
-                        <!-- Block Jam Otomatis -->
-                        <div class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 rounded-xl">
-                            <div class="mb-3">
-                                <label class="block text-xs font-bold text-blue-600 dark:text-blue-400 mb-1.5 text-center">Jadwal Keberangkatan (STD)</label>
-                                <input type="text" id="dep-std" oninput="autoCalculateDepTimes(this.value)" required class="w-full bg-white dark:bg-slate-950 border-2 border-blue-200 dark:border-blue-800 rounded-xl py-3 text-base font-mono font-bold text-center text-slate-900 dark:text-white outline-none focus:border-blue-500 transition-all" placeholder="06:45">
+                                <label class="block text-[11px] font-bold text-slate-500 mb-1.5 px-1">No Flight & Ground Handling</label>
+                                <div class="flex gap-2">
+                                    <input type="text" id="arr-noFlight" required class="w-3/5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-mono font-bold outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all uppercase" placeholder="GA 183">
+                                    <input type="text" id="arr-groundHandling" required class="w-2/5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-semibold outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all uppercase" placeholder="GAPURA">
+                                </div>
                             </div>
                             <div class="grid grid-cols-2 gap-2">
                                 <div>
-                                    <label class="block text-[10px] font-bold text-slate-500 mb-1 text-center">Buka (-3 Jam)</label>
-                                    <input type="time" id="dep-jamBuka" class="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg py-2.5 text-sm font-mono font-bold text-center text-slate-700 dark:text-slate-300 outline-none" required>
+                                    <label class="block text-[11px] font-bold text-slate-500 mb-1.5 px-1">Origin (Asal)</label>
+                                    <input type="text" id="arr-origin" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-mono font-bold outline-none focus:border-blue-500 transition-all uppercase" placeholder="KNO">
                                 </div>
                                 <div>
-                                    <label class="block text-[10px] font-bold text-slate-500 mb-1 text-center">Tutup (-40 Menit)</label>
-                                    <input type="time" id="dep-jamTutup" class="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg py-2.5 text-sm font-mono font-bold text-center text-slate-700 dark:text-slate-300 outline-none" required>
+                                    <label class="block text-[11px] font-bold text-slate-500 mb-1.5 px-1">Parking Stand</label>
+                                    <input type="text" id="arr-parkingStand" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-mono font-bold outline-none focus:border-blue-500 transition-all uppercase" placeholder="B3">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-500 mb-1.5 px-1">BCB No</label>
+                                    <input type="text" id="arr-bcbNo" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-mono font-bold outline-none focus:border-blue-500 transition-all uppercase" placeholder="BCB-001">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-500 mb-1.5 px-1 text-blue-600 dark:text-blue-400">AIBT (Jam Tiba)</label>
+                                    <input type="time" id="arr-aibt" class="w-full bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 rounded-xl px-4 py-3 text-sm font-mono font-bold outline-none focus:border-blue-500 transition-all text-center">
                                 </div>
                             </div>
                         </div>
-                    </div>
-                `;
-
+                    `;
+                }
                 if (record) {
-                    document.getElementById('recordId').value = record.id;
-                    document.getElementById('dep-desk').value = record.desk || '';
-                    document.getElementById('dep-flightNo').value = record.flightNo || '';
-                    document.getElementById('dep-maskapai').value = record.maskapai || '';
-                    document.getElementById('dep-dos').value = record.dos || '';
-                    document.getElementById('dep-tipePesawat').value = record.tipePesawat || '';
-                    document.getElementById('dep-std').value = record.std || '';
-                    document.getElementById('dep-jamBuka').value = record.jamBuka || '';
-                    document.getElementById('dep-jamTutup').value = record.jamTutup || '';
+                    if (recEl) recEl.value = record.id;
+                    const gh = document.getElementById('arr-groundHandling'); if (gh) gh.value = record.groundHandling || '';
+                    const nf = document.getElementById('arr-noFlight'); if (nf) nf.value = record.noFlight || '';
+                    const ori = document.getElementById('arr-origin'); if (ori) ori.value = record.origin || '';
+                    const bcb = document.getElementById('arr-bcbNo'); if (bcb) bcb.value = record.bcbNo || '';
+                    const ps = document.getElementById('arr-parkingStand'); if (ps) ps.value = record.parkingStand || '';
+                    const aibt = document.getElementById('arr-aibt'); if (aibt) aibt.value = record.aibt || '';
+                }
+            } else {
+                if (headerLabel) headerLabel.innerText = record ? 'Edit Keberangkatan' : 'Entri Keberangkatan';
+                if (dynamicFields) {
+                    dynamicFields.innerHTML = `
+                        <div class="space-y-3">
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-500 mb-1.5 px-1">No Flight</label>
+                                    <input type="text" id="dep-flightNo" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-mono font-bold outline-none focus:border-blue-500 transition-all uppercase" placeholder="GA 182">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-500 mb-1.5 px-1">Desk Counter</label>
+                                    <input type="text" id="dep-desk" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-semibold outline-none focus:border-blue-500 transition-all uppercase" placeholder="D10-D12">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-500 mb-1.5 px-1">Maskapai</label>
+                                <input type="text" id="dep-maskapai" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-semibold outline-none focus:border-blue-500 transition-all" placeholder="Garuda Indonesia">
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-500 mb-1.5 px-1">Rute / DOS</label>
+                                    <input type="text" id="dep-dos" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-mono font-bold outline-none focus:border-blue-500 transition-all uppercase" placeholder="CGK-KNO">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-500 mb-1.5 px-1">Tipe Pesawat</label>
+                                    <input type="text" id="dep-tipePesawat" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-semibold outline-none focus:border-blue-500 transition-all uppercase" placeholder="B737-800">
+                                </div>
+                            </div>
+                            
+                            <div class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 rounded-xl">
+                                <div class="mb-3">
+                                    <label class="block text-xs font-bold text-blue-600 dark:text-blue-400 mb-1.5 text-center">Jadwal Keberangkatan (STD)</label>
+                                    <input type="text" id="dep-std" oninput="autoCalculateDepTimes(this.value)" required class="w-full bg-white dark:bg-slate-950 border-2 border-blue-200 dark:border-blue-800 rounded-xl py-3 text-base font-mono font-bold text-center text-slate-900 dark:text-white outline-none focus:border-blue-500 transition-all" placeholder="06:45">
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-slate-500 mb-1 text-center">Buka (-3 Jam)</label>
+                                        <input type="time" id="dep-jamBuka" class="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg py-2.5 text-sm font-mono font-bold text-center text-slate-700 dark:text-slate-300 outline-none" required>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-slate-500 mb-1 text-center">Tutup (-40 Menit)</label>
+                                        <input type="time" id="dep-jamTutup" class="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg py-2.5 text-sm font-mono font-bold text-center text-slate-700 dark:text-slate-300 outline-none" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                if (record) {
+                    if (recEl) recEl.value = record.id;
+                    const desk = document.getElementById('dep-desk'); if (desk) desk.value = record.desk || '';
+                    const fn = document.getElementById('dep-flightNo'); if (fn) fn.value = record.flightNo || '';
+                    const mask = document.getElementById('dep-maskapai'); if (mask) mask.value = record.maskapai || '';
+                    const dos = document.getElementById('dep-dos'); if (dos) dos.value = record.dos || '';
+                    const tp = document.getElementById('dep-tipePesawat'); if (tp) tp.value = record.tipePesawat || '';
+                    const std = document.getElementById('dep-std'); if (std) std.value = record.std || '';
+                    const jb = document.getElementById('dep-jamBuka'); if (jb) jb.value = record.jamBuka || '';
+                    const jt = document.getElementById('dep-jamTutup'); if (jt) jt.value = record.jamTutup || '';
                 }
             }
 
-            // Animasi memunculkan bottom sheet
             const backdrop = document.getElementById('modalBackdrop');
             const modal = document.getElementById('formModal');
             if (backdrop && modal) {
                 backdrop.classList.remove('hidden');
                 modal.classList.remove('hidden');
-                // Trigger reflow
                 void modal.offsetWidth; 
                 backdrop.classList.remove('opacity-0');
                 modal.classList.remove('translate-y-full');
@@ -811,7 +767,6 @@
             backdrop.classList.add('opacity-0');
             modal.classList.add('translate-y-full');
             
-            // Tunggu animasi CSS selesai
             setTimeout(() => {
                 backdrop.classList.add('hidden');
                 modal.classList.add('hidden');
@@ -821,47 +776,207 @@
         function saveData() {
             let record = { 
                 type: masterType,
-                id: document.getElementById('recordId').value 
+                id: document.getElementById('recordId') ? document.getElementById('recordId').value : '' 
             };
 
             if (masterType === 'ARRIVAL') {
-                record.groundHandling = document.getElementById('arr-groundHandling').value.trim().toUpperCase();
-                record.noFlight = document.getElementById('arr-noFlight').value.trim().toUpperCase();
-                record.origin = document.getElementById('arr-origin').value.trim().toUpperCase();
-                record.bcbNo = document.getElementById('arr-bcbNo').value.trim().toUpperCase();
-                record.parkingStand = document.getElementById('arr-parkingStand').value.trim().toUpperCase();
-                record.aibt = document.getElementById('arr-aibt').value.trim();
+                record.groundHandling = (document.getElementById('arr-groundHandling') ? document.getElementById('arr-groundHandling').value : '').trim().toUpperCase();
+                record.noFlight = (document.getElementById('arr-noFlight') ? document.getElementById('arr-noFlight').value : '').trim().toUpperCase();
+                record.origin = (document.getElementById('arr-origin') ? document.getElementById('arr-origin').value : '').trim().toUpperCase();
+                record.bcbNo = (document.getElementById('arr-bcbNo') ? document.getElementById('arr-bcbNo').value : '').trim().toUpperCase();
+                record.parkingStand = (document.getElementById('arr-parkingStand') ? document.getElementById('arr-parkingStand').value : '').trim().toUpperCase();
+                record.aibt = (document.getElementById('arr-aibt') ? document.getElementById('arr-aibt').value : '').trim();
             } else {
-                record.desk = document.getElementById('dep-desk').value.trim().toUpperCase();
-                record.flightNo = document.getElementById('dep-flightNo').value.trim().toUpperCase();
-                record.maskapai = document.getElementById('dep-maskapai').value.trim();
-                record.dos = document.getElementById('dep-dos').value.trim().toUpperCase();
-                record.tipePesawat = document.getElementById('dep-tipePesawat').value.trim().toUpperCase();
-                record.std = document.getElementById('dep-std').value.trim();
-                record.jamBuka = document.getElementById('dep-jamBuka').value.trim();
-                record.jamTutup = document.getElementById('dep-jamTutup').value.trim();
+                record.desk = (document.getElementById('dep-desk') ? document.getElementById('dep-desk').value : '').trim().toUpperCase();
+                record.flightNo = (document.getElementById('dep-flightNo') ? document.getElementById('dep-flightNo').value : '').trim().toUpperCase();
+                record.maskapai = (document.getElementById('dep-maskapai') ? document.getElementById('dep-maskapai').value : '').trim();
+                record.dos = (document.getElementById('dep-dos') ? document.getElementById('dep-dos').value : '').trim().toUpperCase();
+                record.tipePesawat = (document.getElementById('dep-tipePesawat') ? document.getElementById('dep-tipePesawat').value : '').trim().toUpperCase();
+                record.std = (document.getElementById('dep-std') ? document.getElementById('dep-std').value : '').trim();
+                record.jamBuka = (document.getElementById('dep-jamBuka') ? document.getElementById('dep-jamBuka').value : '').trim();
+                record.jamTutup = (document.getElementById('dep-jamTutup') ? document.getElementById('dep-jamTutup').value : '').trim();
             }
 
             const btnSave = document.getElementById('btnSave');
             const btnText = document.getElementById('btnSaveText');
             const spinner = document.getElementById('btnSaveSpinner');
 
-            btnSave.disabled = true;
-            btnText.innerText = 'Menyimpan...';
-            spinner.classList.remove('hidden');
+            if (btnSave) btnSave.disabled = true;
+            if (btnText) btnText.innerText = 'Menyimpan...';
+            if (spinner) spinner.classList.remove('hidden');
 
-            // Kirim data via POST ke Google Script
-            fetch(SCRIPT_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'text/plain;charset=utf-8', // Hindari error CORS Preflight
-                },
-                body: JSON.stringify({
-                    action: 'save',
-                    data: record
-                })
-            })
-            .then(response => response.json())
-            .then(res => {
-                resetFormBtn();
-                closeModal();
+            if (typeof google !== 'undefined' && google.script && google.script.run) {
+                google.script.run
+                    .withSuccessHandler(res => {
+                        resetFormBtn();
+                        closeModal();
+                        showToast('Tersimpan', res.message || 'Data berhasil disimpan.', 'success');
+                        playChime('success');
+                        loadData();
+                    })
+                    .withFailureHandler(err => {
+                        resetFormBtn();
+                        showToast('Gagal', err.toString(), 'error');
+                        playChime('error');
+                    })
+                    .saveFlightData(record);
+            } else {
+                setTimeout(() => {
+                    resetFormBtn();
+                    closeModal();
+                    showToast('Tersimpan', 'Data berhasil diperbarui.', 'success');
+                    playChime('success');
+                    loadData();
+                }, 800);
+            }
+
+            function resetFormBtn() {
+                if (btnSave) btnSave.disabled = false;
+                if (btnText) btnText.innerText = 'Simpan Data';
+                if (spinner) spinner.classList.add('hidden');
+            }
+        }
+
+        let pendingDeleteId = null;
+        function confirmDeleteFlight(id, flightNo) {
+            pendingDeleteId = id;
+            const target = document.getElementById('deleteFlightNoTarget');
+            if (target) target.innerText = flightNo;
+            
+            const backdrop = document.getElementById('deleteModalBackdrop');
+            const modal = document.getElementById('deleteModal');
+            
+            if (backdrop && modal) {
+                backdrop.classList.remove('hidden');
+                modal.classList.remove('hidden');
+                void modal.offsetWidth;
+                backdrop.classList.remove('opacity-0');
+            }
+        }
+
+        function closeDeleteModal() {
+            const backdrop = document.getElementById('deleteModalBackdrop');
+            const modal = document.getElementById('deleteModal');
+            if (backdrop) backdrop.classList.add('opacity-0');
+            
+            setTimeout(() => {
+                if (backdrop) backdrop.classList.add('hidden');
+                if (modal) modal.classList.add('hidden');
+                pendingDeleteId = null;
+            }, 200);
+        }
+
+        function executeDeleteFlight() {
+            if (!pendingDeleteId) return;
+
+            const btnConfirm = document.getElementById('btnConfirmDelete');
+            const btnText = document.getElementById('btnDeleteText');
+            const spinner = document.getElementById('btnDeleteSpinner');
+
+            if (btnConfirm) btnConfirm.disabled = true;
+            if (btnText) btnText.innerText = 'Menghapus...';
+            if (spinner) spinner.classList.remove('hidden');
+
+            if (typeof google !== 'undefined' && google.script && google.script.run) {
+                google.script.run
+                    .withSuccessHandler(res => {
+                        finishDelete();
+                        showToast('Dihapus', 'Data penerbangan berhasil dihapus.', 'success');
+                        playChime('success');
+                        loadData();
+                    })
+                    .withFailureHandler(err => {
+                        finishDelete();
+                        showToast('Gagal', err.toString(), 'error');
+                        playChime('error');
+                    })
+                    .deleteFlightData(masterType, pendingDeleteId);
+            } else {
+                setTimeout(() => {
+                    finishDelete();
+                    showToast('Dihapus', 'Data penerbangan berhasil dihapus.', 'success');
+                    playChime('success');
+                    loadData();
+                }, 600);
+            }
+
+            function finishDelete() {
+                if (btnConfirm) btnConfirm.disabled = false;
+                if (btnText) btnText.innerText = 'Ya, Hapus';
+                if (spinner) spinner.classList.add('hidden');
+                closeDeleteModal();
+            }
+        }
+
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+            const icon = document.getElementById('themeIcon');
+            if (icon) {
+                icon.className = document.documentElement.classList.contains('dark') ? "fa-solid fa-sun text-amber-400" : "fa-solid fa-moon";
+            }
+        }
+
+        function openEmbedModal() {
+            const backdrop = document.getElementById('embedModalBackdrop');
+            const modal = document.getElementById('embedModal');
+            const iframe = document.getElementById('gasIframe');
+            
+            if (iframe && !iframe.src) {
+                iframe.src = GAS_API_URL;
+            }
+            
+            if (backdrop && modal) {
+                backdrop.classList.remove('hidden');
+                modal.classList.remove('hidden');
+                void modal.offsetWidth;
+                backdrop.classList.remove('opacity-0');
+            }
+        }
+
+        function closeEmbedModal() {
+            const backdrop = document.getElementById('embedModalBackdrop');
+            const modal = document.getElementById('embedModal');
+            if (backdrop && modal) {
+                backdrop.classList.add('opacity-0');
+                setTimeout(() => {
+                    backdrop.classList.add('hidden');
+                    modal.classList.add('hidden');
+                }, 200);
+            }
+        }
+
+        let toastTimer;
+        function showToast(title, message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const iconBox = document.getElementById('toastIcon');
+            const progressBar = document.getElementById('toastProgressBar');
+            const titleEl = document.getElementById('toastTitle');
+            const msgEl = document.getElementById('toastMessage');
+            
+            if (!toast || !iconBox || !progressBar || !titleEl || !msgEl) return;
+
+            titleEl.innerText = title;
+            msgEl.innerText = message;
+
+            clearTimeout(toastTimer);
+            toast.classList.remove('-translate-y-24', 'opacity-0');
+            progressBar.classList.remove('animate-toast-bar');
+            void progressBar.offsetWidth;
+
+            if (type === 'success') {
+                iconBox.innerHTML = '<i class="fa-solid fa-check"></i>';
+                iconBox.className = "flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-white bg-emerald-500 text-sm";
+                progressBar.className = "absolute bottom-0 left-0 h-1 bg-emerald-500 animate-toast-bar";
+            } else if (type === 'error') {
+                iconBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+                iconBox.className = "flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-white bg-rose-500 text-sm";
+                progressBar.className = "absolute bottom-0 left-0 h-1 bg-rose-500 animate-toast-bar";
+            }
+
+            toastTimer = setTimeout(() => {
+                toast.classList.add('-translate-y-24', 'opacity-0');
+            }, 3500);
+        }
+    </script>
+</body>
+</html>
