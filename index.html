@@ -2,1136 +2,1390 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    
-    <!-- PWA / Web App Capabilities -->
-    <meta name="theme-color" content="#2563eb">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="FlightOps">
-    
-    <title>FlightOps Hub</title>
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Arrival Baggage Bay - Board System</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: { slate: { 925: '#0b0f19', 950: '#070a12' } },
-                    fontFamily: {
-                        sans: ['Plus Jakarta Sans', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace'],
-                    },
-                    spacing: { 'safe-bottom': 'env(safe-area-inset-bottom)' }
-                }
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@700&display=swap');
+        
+        :root {
+            --primary: #0f172a;
+            --accent: #facc15;
+            --live: #ef4444;
+            --google-green: #81c995;
+            --google-card-bg: #202124;
+            --cyan-glow: #06b6d4;
+            --emerald-glow: #10b981;
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #0b0f19;
+            color: #f1f5f9;
+        }
+
+        .digital-clock {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent);
+            text-shadow: 0 0 10px rgba(250, 204, 21, 0.4);
+        }
+
+        .fids-table thead th {
+            background-color: #1e293b;
+            color: #94a3b8;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 0.05em;
+            padding: 14px 16px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .status-active { background-color: #dcfce7; color: #166534; }
+        .status-waiting { background-color: #1e293b; color: #94a3b8; }
+        .status-process { background-color: #fef3c7; color: #92400e; }
+
+        .live-row {
+            background-color: rgba(239, 68, 68, 0.05) !important;
+            border-left: 4px solid var(--live) !important;
+            position: relative;
+        }
+
+        .live-tag {
+            background-color: var(--live);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 8px;
+            font-weight: 900;
+            text-transform: uppercase;
+            animation: pulse-live 1.5s infinite;
+        }
+
+        @keyframes pulse-live {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.05); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .busy-indicator {
+            color: #f97316;
+            animation: pulse-fire 1.5s infinite;
+        }
+
+        @keyframes pulse-fire {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        #refresh-progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: #3b82f6;
+            width: 0%;
+            transition: width 1s linear;
+        }
+
+        .modal-blur {
+            background-color: rgba(11, 15, 25, 0.85);
+            backdrop-filter: blur(12px);
+        }
+
+        @media (max-width: 768px) {
+            .mobile-card {
+                background: #1e293b;
+                margin-bottom: 8px;
+                padding: 16px;
+                border-radius: 16px;
+                box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+                border: 1px solid #334155;
             }
         }
-    </script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
 
-    <style>
-        body { 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
-            -webkit-tap-highlight-color: transparent;
-            overscroll-behavior-y: none;
-            user-select: none;
-        }
-        input, textarea { user-select: auto; }
-        
-        ::-webkit-scrollbar { width: 0px; background: transparent; display: none; }
-        * { scrollbar-width: none; }
-        
-        .glass-header {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-        }
-        .dark .glass-header {
-            background: rgba(11, 15, 25, 0.9);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+        .btn-icon-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(4px); }
-            to { opacity: 1; transform: translateY(0); }
+        .btn-icon-label {
+            font-size: 10px;
+            font-weight: 800;
+            color: #64748b;
+            text-transform: uppercase;
+            margin-top: 6px;
+            text-align: center;
         }
-        .animate-fade { animation: fadeIn 0.2s ease-out forwards; }
-        @keyframes shrinkProgress {
-            from { width: 100%; }
-            to { width: 0%; }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
-        .animate-toast-bar { animation: shrinkProgress 3.5s linear forwards; }
+
+        .photo-preview {
+            width: 100%;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            margin-top: 4px;
+        }
     </style>
 </head>
+<body class="min-h-screen pb-10">
 
-<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 fixed inset-0 flex flex-col antialiased">
+    <header class="bg-[#0f172a] text-white sticky top-0 z-50 border-b border-slate-800 shadow-2xl">
+        <div id="refresh-progress"></div>
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex flex-col gap-4">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center gap-3">
+                        <div class="bg-blue-600 p-2.5 rounded-xl shadow-lg">
+                            <i class="fas fa-plane-arrival text-lg text-white"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-sm md:text-xl font-extrabold uppercase tracking-widest text-blue-400">Arrival Baggage Bay</h1>
+                            <div id="currentDate" class="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5"></div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div id="digitalClock" class="digital-clock text-xl md:text-2xl leading-none">00:00</div>
+                        <p class="text-[8px] text-blue-400 font-bold uppercase tracking-widest mt-1"><i class="fas fa-satellite-dish"></i> FIDS Board Active</p>
+                    </div>
+                </div>
 
-    <header class="glass-header border-b border-slate-200/80 dark:border-slate-800/80 z-30 px-4 py-3 flex justify-between items-center gap-2 flex-shrink-0 pt-[calc(env(safe-area-inset-top)+0.75rem)]">
-        <div class="flex items-center gap-2.5 flex-1 min-w-0">
-            <div class="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold shadow-md shadow-blue-600/20 flex-shrink-0">
-                <i class="fa-solid fa-plane-circle-check text-sm"></i>
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <div class="relative flex-grow">
+                        <input type="text" id="searchInput" 
+                            placeholder="Cari Flight, Asal, atau Stand di Papan..." 
+                            class="w-full pl-10 pr-12 py-3 rounded-xl bg-slate-900 border border-slate-800 text-white text-sm focus:ring-2 focus:ring-blue-500 outline-none placeholder-slate-500">
+                        <i class="fas fa-search absolute left-4 top-4 text-slate-500 text-xs"></i>
+                    </div>
+                    
+                    <div class="flex gap-2">
+                        <button onclick="manualRefresh()" class="bg-slate-800 hover:bg-slate-700 p-3.5 rounded-xl transition-all active:scale-95 border border-slate-700" title="Refresh Board">
+                            <i id="syncIcon" class="fas fa-sync-alt text-white text-xs"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
-            <div class="min-w-0">
-                <h1 class="text-sm font-extrabold tracking-tight text-slate-900 dark:text-white truncate">FlightOps</h1>
-                <p id="headerSubtitle" class="text-[10px] text-slate-500 font-medium truncate">Kedatangan Aktif</p>
-            </div>
-        </div>
-
-        <div class="flex items-center gap-2 flex-shrink-0">
-            <div class="bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-2 py-1.5 rounded-lg flex items-center gap-1.5">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span id="currentTime" class="text-xs font-mono font-bold tracking-wider text-slate-700 dark:text-slate-300">00:00</span>
-            </div>
-            <button onclick="document.getElementById('csvFileInput').click()" title="Import CSV" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs transition-colors active:scale-95">
-                <i class="fa-solid fa-file-csv text-sm text-emerald-600 dark:text-emerald-400"></i>
-            </button>
-            <button onclick="downloadCSVTemplate()" title="Unduh Template CSV" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs transition-colors active:scale-95">
-                <i class="fa-solid fa-file-arrow-down text-sm text-blue-600 dark:text-blue-400"></i>
-            </button>
-            <input type="file" id="csvFileInput" accept=".csv" onchange="handleCSVUpload(event)" class="hidden">
-            <button onclick="loadData()" title="Sinkronisasi" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs transition-colors active:scale-95">
-                <i class="fa-solid fa-rotate-right"></i>
-            </button>
-            <button onclick="toggleTheme()" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs transition-colors active:scale-95">
-                <i id="themeIcon" class="fa-solid fa-moon"></i>
-            </button>
         </div>
     </header>
 
-    <div class="px-4 py-3 bg-white dark:bg-slate-900 z-20 flex-shrink-0 border-b border-slate-200 dark:border-slate-800 shadow-sm">
-        <div class="relative w-full mb-3">
-            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
-                <i class="fa-solid fa-magnifying-glass text-xs"></i>
+    <main class="container mx-auto px-4 py-6">
+        <!-- Dashboard Stats -->
+        <div class="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+            <div class="glass-panel p-4 rounded-2xl shadow-sm border border-slate-800">
+                <div class="text-slate-500 text-[9px] font-bold uppercase tracking-widest mb-1 text-center">Total Kedatangan</div>
+                <div id="statTotal" class="text-2xl font-black text-center text-white">0</div>
             </div>
-            <input type="text" id="searchInput" onkeyup="handleSearch()"
-                class="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white text-xs font-medium rounded-xl block w-full pl-9 pr-9 py-3 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder:text-slate-400" 
-                placeholder="Cari flight, rute, parking stand...">
-            <button id="clearSearchBtn" onclick="clearSearch()" class="hidden absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 active:text-slate-600">
-                <i class="fa-solid fa-circle-xmark"></i>
-            </button>
-        </div>
-        <div class="flex items-center gap-2 overflow-x-auto scroll-smooth w-full pb-1" id="statusFilterTabs">
-            <!-- Filter dinamis dirender via JS -->
-        </div>
-    </div>
-
-    <main class="flex-1 min-h-0 relative bg-slate-50 dark:bg-slate-950">
-        <div id="loadingOverlay" class="absolute inset-0 bg-slate-50/80 dark:bg-slate-950/80 backdrop-blur-sm z-20 flex flex-col items-center justify-center">
-            <div class="w-8 h-8 border-3 border-blue-200 dark:border-blue-900 border-t-blue-600 rounded-full animate-spin"></div>
-            <p class="text-xs font-semibold text-slate-600 dark:text-slate-300 mt-3">Sinkronisasi data...</p>
-        </div>
-        <div id="emptyState" class="hidden absolute inset-0 z-10 flex flex-col items-center justify-center text-slate-400 p-6 text-center">
-            <div class="w-16 h-16 mb-4 rounded-full bg-slate-200/50 dark:bg-slate-800/50 flex items-center justify-center text-slate-400 dark:text-slate-500">
-                <i class="fa-solid fa-inbox text-2xl"></i>
+            <div class="glass-panel p-4 rounded-2xl shadow-sm border border-slate-800">
+                <div class="text-green-400 text-[9px] font-bold uppercase tracking-widest mb-1 text-center">Status Belt</div>
+                <div id="statLanded" class="text-2xl font-black text-center text-green-400">0</div>
             </div>
-            <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300">Tidak Ada Data</h3>
-            <p class="text-xs text-slate-500 mt-1 max-w-[220px]">Tidak ada penerbangan yang sesuai dengan filter atau pencarian Anda.</p>
-        </div>
-        <div id="mobileCardList" class="h-full overflow-y-auto px-4 py-3 space-y-3 pb-24">
-            <!-- Data penerbangan dimuat di sini -->
-        </div>
-    </main>
-
-    <!-- Floating Action Button -->
-    <button onclick="openModal()" class="fixed bottom-24 right-5 z-40 w-14 h-14 bg-blue-600 active:bg-blue-700 text-white rounded-full shadow-[0_8px_16px_rgba(37,99,235,0.4)] flex items-center justify-center transition-transform transform active:scale-95">
-        <i class="fa-solid fa-plus text-xl"></i>
-    </button>
-
-    <nav class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex-shrink-0 z-30 pb-[env(safe-area-inset-bottom)]">
-        <div class="flex items-center justify-around h-16 px-2">
-            <button onclick="setMasterType('ARRIVAL')" id="navArrival" class="flex-1 h-full flex flex-col items-center justify-center gap-1 text-blue-600 dark:text-blue-500 font-bold transition-all">
-                <i class="fa-solid fa-plane-arrival text-xl mb-0.5 transform -translate-y-1 transition-transform"></i>
-                <span class="text-[10px]">Kedatangan</span>
-            </button>
-            <button onclick="setMasterType('DEPARTURE')" id="navDeparture" class="flex-1 h-full flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 font-semibold transition-all">
-                <i class="fa-solid fa-plane-departure text-lg mb-0.5"></i>
-                <span class="text-[10px]">Keberangkatan</span>
-            </button>
-        </div>
-    </nav>
-
-    <div id="modalBackdrop" onclick="closeModal()" class="hidden fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 transition-opacity opacity-0"></div>
-    <div id="formModal" class="hidden fixed inset-x-0 bottom-0 z-50 transform translate-y-full transition-transform duration-300 ease-out">
-        <div class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 rounded-t-3xl shadow-2xl flex flex-col max-h-[88vh] pb-[env(safe-area-inset-bottom)]">
-            <div class="w-full flex justify-center pt-3 pb-2" onclick="closeModal()">
-                <div class="w-12 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-full"></div>
+            <div class="col-span-2 lg:col-span-1 glass-panel p-4 rounded-2xl shadow-sm border border-slate-800 flex flex-col justify-center items-center text-center">
+                <p class="text-[8px] font-bold text-slate-500 uppercase mb-1">Pembaruan Terakhir</p>
+                <div id="lastSync" class="text-xs font-bold text-slate-300">--:--</div>
             </div>
-            <div class="flex items-center justify-between px-5 pb-3 border-b border-slate-100 dark:border-slate-800 flex-shrink-0">
-                <h3 id="modalTitleText" class="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-                    <i class="fa-solid fa-pen-to-square text-blue-600"></i>
-                    <span id="modalHeaderLabel">Entri Kedatangan</span>
-                </h3>
-            </div>
-            <div class="p-5 overflow-y-auto scroll-smooth flex-1">
-                <form id="flightForm" onsubmit="event.preventDefault(); saveData();" class="space-y-4">
-                    <input type="hidden" id="recordId">
-                    <div id="dynamicFormFields" class="space-y-4"></div>
-                    <div class="pt-4 pb-2">
-                        <button type="submit" id="btnSave" class="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2 transition-transform active:scale-95">
-                            <span id="btnSaveSpinner" class="hidden w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                            <span id="btnSaveText">Simpan Data</span>
-                        </button>
+        </div>
+
+        <!-- Section: Flight Board -->
+        <section class="mb-6">
+            <div class="flex justify-between items-center mb-3">
+                <div class="flex items-center gap-2">
+                    <div class="bg-blue-600 text-white p-1.5 rounded-lg shadow-md">
+                        <i class="fas fa-list text-xs"></i>
                     </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <div id="deleteModalBackdrop" onclick="closeDeleteModal()" class="hidden fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 transition-opacity opacity-0"></div>
-    <div id="deleteModal" class="hidden fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 transform max-w-xs w-full transition-all duration-200 px-4">
-        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-xl p-6 text-center">
-            <div class="w-14 h-14 rounded-full bg-rose-100 dark:bg-rose-950/60 text-rose-600 mx-auto flex items-center justify-center mb-4 text-2xl">
-                <i class="fa-solid fa-triangle-exclamation"></i>
-            </div>
-            <h3 class="text-base font-bold text-slate-900 dark:text-white mb-2">Hapus Penerbangan?</h3>
-            <p class="text-xs text-slate-500 dark:text-slate-400 mb-6 leading-relaxed">
-                Anda akan menghapus data penerbangan <span id="deleteFlightNoTarget" class="font-mono font-bold text-rose-600 dark:text-rose-400"></span>. Data yang dihapus tidak dapat dikembalikan.
-            </p>
-            <div class="flex items-center gap-2">
-                <button type="button" onclick="closeDeleteModal()" class="flex-1 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-semibold transition-colors">Batal</button>
-                <button type="button" id="btnConfirmDelete" onclick="executeDeleteFlight()" class="flex-1 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition-colors shadow-lg shadow-rose-600/30 flex items-center justify-center gap-2">
-                    <span id="btnDeleteSpinner" class="hidden w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                    <span id="btnDeleteText">Ya, Hapus</span>
+                    <h2 class="text-xs md:text-sm font-extrabold uppercase tracking-widest text-slate-300">Papan Penerbangan Utama</h2>
+                </div>
+                <button onclick="toggleFlightsBoard()" id="toggleBoardBtn" class="bg-slate-800 hover:bg-slate-700 text-slate-300 w-8 h-8 rounded-full flex items-center justify-center transition-all border border-slate-700 active:scale-90" title="Sembunyikan / Tampilkan Papan">
+                    <i id="toggleBoardIcon" class="fas fa-chevron-up text-xs"></i>
                 </button>
             </div>
-        </div>
-    </div>
 
-    <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 z-[60] transition-all duration-300 transform -translate-y-24 opacity-0 pointer-events-none max-w-xs w-full px-4">
-        <div class="bg-slate-900 dark:bg-white text-white dark:text-slate-900 p-3.5 rounded-2xl shadow-2xl flex items-center gap-3 border border-slate-800 dark:border-slate-200 relative overflow-hidden pointer-events-auto">
-            <div id="toastIcon" class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-xl text-white bg-emerald-500 text-sm">
-                <i class="fa-solid fa-check"></i>
+            <div id="mainContent" class="bg-slate-900 md:rounded-3xl shadow-xl border border-slate-800 overflow-hidden min-h-[300px] transition-all duration-300">
+                <div class="hidden md:block overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-800 text-slate-400 border-b border-slate-700">
+                            <tr class="text-xs font-bold uppercase">
+                                <th class="w-32 px-6 py-4">AIBT (Jadwal)</th>
+                                <th>No. Penerbangan</th>
+                                <th>Asal</th>
+                                <th class="text-center">Stand</th>
+                                <th class="text-center">BCB No</th>
+                                <th class="text-center">Status Laporan</th>
+                                <th>Remarks / Sumber</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody" class="divide-y divide-slate-800"></tbody>
+                    </table>
+                </div>
+                <div id="mobileCards" class="md:hidden p-3 bg-slate-950 flex flex-col gap-2"></div>
+                <div id="loader" class="p-20 text-center">
+                    <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-blue-600 border-t-transparent mb-4"></div>
+                    <p class="text-xs font-black text-slate-400 uppercase tracking-widest">Memuat database penerbangan...</p>
+                </div>
+                <div id="emptyState" class="hidden py-20 text-center">
+                    <i class="fas fa-database text-3xl text-slate-700 mb-4"></i>
+                    <h3 class="font-bold text-slate-500">Papan Kosong. Silakan sinkronisasikan ulang untuk memuat data terbaru.</h3>
+                </div>
             </div>
-            <div class="flex-1 min-w-0 pr-1">
-                <h4 id="toastTitle" class="text-xs font-bold truncate">Berhasil</h4>
-                <p id="toastMessage" class="text-[11px] opacity-80 leading-snug truncate">Data penerbangan diperbarui.</p>
+        </section>
+
+        <section class="mt-8">
+            <div class="flex justify-between items-center mb-4">
+                <div class="flex items-center gap-2">
+                    <div class="bg-indigo-600 text-white p-1.5 rounded-lg shadow-md">
+                        <i class="fas fa-history text-xs"></i>
+                    </div>
+                    <h2 class="text-xs md:text-sm font-extrabold uppercase tracking-widest text-slate-300">Riwayat Laporan Hari Ini (Real-Time)</h2>
+                </div>
             </div>
-            <div id="toastProgressBar" class="absolute bottom-0 left-0 h-1 bg-emerald-500 w-full"></div>
-        </div>
-    </div>
 
-    <script>
-        const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbz5GIUwTqfh9dCKI27BCyk8qYa-PM7nZqqzaLEd_ojuWcgYLp1e2EfvarwnMKYI1pc/exec';
+            <div class="bg-slate-900 md:rounded-3xl shadow-xl border border-slate-800 overflow-hidden min-h-[150px]">
+                <div class="hidden md:block overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-800 border-b border-slate-700 text-slate-400">
+                            <tr>
+                                <th class="px-6 py-4 text-[10px] font-black uppercase tracking-wider">Waktu Simpan</th>
+                                <th class="px-6 py-4 text-[10px] font-black uppercase tracking-wider">Flight</th>
+                                <th class="px-6 py-4 text-[10px] font-black uppercase tracking-wider">Stand</th>
+                                <th class="px-6 py-4 text-[10px] font-black uppercase tracking-wider">BCB</th>
+                                <th class="px-6 py-4 text-[10px] font-black uppercase tracking-wider">AIBT</th>
+                                <th class="px-6 py-4 text-[10px] font-black uppercase tracking-wider">FIBAG</th>
+                                <th class="px-6 py-4 text-[10px] font-black uppercase tracking-wider">LASTBAG</th>
+                                <th class="px-6 py-4 text-[10px] font-black uppercase tracking-wider">Bukti Foto</th>
+                                <th class="px-6 py-4 text-[10px] font-black uppercase tracking-wider text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTbody" class="divide-y divide-slate-800"></tbody>
+                    </table>
+                </div>
+                <div id="mobileHistoryCards" class="md:hidden p-3 bg-slate-950 flex flex-col gap-2"></div>
+                <div id="historyEmptyState" class="p-10 text-center text-slate-500 text-xs">
+                    <i class="fas fa-clipboard-list text-2xl mb-2 text-slate-700"></i>
+                    <p>Belum ada laporan yang disalin/disimpan hari ini.</p>
+                </div>
+            </div>
+        </section>
+    </main>
 
-        let masterType = 'ARRIVAL';
-        let arrivalDataCache = [];
-        let departureDataCache = [];
-        let filteredData = [];
-        let activeStatusFilter = 'ALL';
-        let synth;
-        try { synth = new Tone.Synth().toDestination(); } catch(e) {}
-
-        function playChime(type = 'info') {
-            try {
-                if (Tone.context.state !== 'running') Tone.start();
-                if (type === 'success') synth.triggerAttackRelease("C5", "8n");
-                else if (type === 'error') synth.triggerAttackRelease("G3", "8n");
-            } catch(err) {}
-        }
-
-        function updateClock() {
-            const now = new Date();
-            const hrs = String(now.getHours()).padStart(2, '0');
-            const mins = String(now.getMinutes()).padStart(2, '0');
-            const clockEl = document.getElementById('currentTime');
-            if (clockEl) clockEl.innerText = `${hrs}:${mins}`;
-
-            // Auto refresh calculations at top of every minute
-            if (now.getSeconds() === 0 && (arrivalDataCache.length > 0 || departureDataCache.length > 0)) {
-                applyFilteringAndSorting();
-            }
-        }
-
-        document.addEventListener("DOMContentLoaded", function() {
-            updateClock();
-            setInterval(updateClock, 1000);
-            loadData();
-            setInterval(() => loadData(true), 30000);
-        });
-
-        async function loadData(isSilent = false) {
-            const overlay = document.getElementById('loadingOverlay');
-            if (!isSilent && overlay) overlay.classList.remove('hidden');
+    <div id="reportModal" class="hidden fixed inset-0 z-[100] flex items-end md:items-center justify-center p-0 md:p-4 modal-blur">
+        <div class="bg-slate-900 w-full max-w-2xl rounded-t-3xl md:rounded-2xl shadow-2xl flex flex-col max-h-[95vh] overflow-hidden border border-slate-800">
+            <div class="bg-slate-950 p-5 flex justify-between items-center text-white border-b border-slate-800">
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-file-alt text-blue-400"></i>
+                    <h2 id="modalTitle" class="font-black uppercase text-[10px] tracking-widest text-slate-200">Editor Laporan</h2>
+                </div>
+                <button onclick="closeModal()" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-800 text-white transition-all active:scale-90">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
             
-            if (typeof google !== 'undefined' && google.script && google.script.run) {
-                google.script.run
-                    .withSuccessHandler(data => onDataLoaded(data, isSilent))
-                    .withFailureHandler(err => onDataLoadError(err, isSilent))
-                    .getAllFlightOpsData();
-            } else {
-                // Mode Deployment GitHub Pages (Direct HTTP Fetch API)
-                try {
-                    const response = await fetch(`${GAS_API_URL}?action=get`);
-                    if (!response.ok) throw new Error('HTTP status ' + response.status);
-                    const res = await response.json();
-                    onDataLoaded(res, isSilent);
-                } catch (err) {
-                    console.warn('Sync server fallback:', err);
-                    const now = new Date();
-                    const fmt = (d) => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-                    const addMins = (m) => new Date(now.getTime() + m * 60000);
+            <div class="flex flex-col overflow-y-auto">
+                <div class="w-full p-6 space-y-5 bg-slate-900">
+                    <!-- INPUT FORM COLUMNS: STAND & BCB -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-400 uppercase mb-1">Parking Stand</label>
+                            <input type="text" id="inStand" oninput="updateReport()" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm font-bold text-emerald-400 focus:border-blue-500 outline-none uppercase">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-400 uppercase mb-1">BCB No (Belt)</label>
+                            <input type="text" id="inBcb" oninput="updateReport()" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm font-bold text-yellow-400 focus:border-blue-500 outline-none uppercase">
+                        </div>
+                    </div>
 
-                    const mockArr = [
-                        {id: 1, type: 'ARRIVAL', groundHandling: 'GAPURA', noFlight: 'GA 183', origin: 'KNO', bcbNo: 'BCB-001', parkingStand: 'B3', aibt: fmt(addMins(-15))},
-                        {id: 2, type: 'ARRIVAL', groundHandling: 'JAS', noFlight: 'SQ 950', origin: 'SIN', bcbNo: '-', parkingStand: 'A2', aibt: ''}
-                    ];
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-400 uppercase mb-1">Nama Petugas</label>
+                            <input type="text" id="inOfficer" oninput="updateReport()" value="NURUL HIDAYAT" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm focus:border-blue-500 text-white outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-400 uppercase mb-1">Area Kerja</label>
+                            <input type="text" id="inArea" oninput="updateReport()" value="T3 CGK-International" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm focus:border-blue-500 text-white outline-none">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-1">Ground Handling</label>
+                        <input type="text" id="inGH" placeholder="Misal: GAPURA, JAS" oninput="updateReport()" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm focus:border-blue-500 text-white outline-none uppercase">
+                    </div>
                     
-                    const mockDep = [
-                        { id: 101, type: 'DEPARTURE', desk: 'D10-D12', maskapai: 'Garuda Indonesia', flightNo: 'GA 182', dos: 'CGK-KNO', tipePesawat: 'B737-800', jamBuka: fmt(addMins(-150)), jamTutup: fmt(addMins(-20)), std: fmt(addMins(20)) },
-                        { id: 102, type: 'DEPARTURE', desk: 'E01-E04', maskapai: 'Batik Air', flightNo: 'ID 6872', dos: 'CGK-DPS', tipePesawat: 'A320', jamBuka: fmt(addMins(-50)), jamTutup: fmt(addMins(15)), std: fmt(addMins(55)) }
-                    ];
-                    onDataLoaded({ arrival: mockArr, departure: mockDep }, isSilent);
-                }
-            }
-        }
-
-        function setMasterType(type) {
-            masterType = type;
-            activeStatusFilter = 'ALL';
-            
-            const navArr = document.getElementById('navArrival');
-            const navDep = document.getElementById('navDeparture');
-            const headerSub = document.getElementById('headerSubtitle');
-
-            if (masterType === 'ARRIVAL') {
-                if (navArr) {
-                    navArr.className = "flex-1 h-full flex flex-col items-center justify-center gap-1 text-blue-600 dark:text-blue-500 font-bold transition-all";
-                    navArr.innerHTML = `<i class="fa-solid fa-plane-arrival text-xl mb-0.5 transform -translate-y-1 transition-transform"></i><span class="text-[10px]">Kedatangan</span>`;
-                }
-                if (navDep) {
-                    navDep.className = "flex-1 h-full flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 font-semibold transition-all";
-                    navDep.innerHTML = `<i class="fa-solid fa-plane-departure text-lg mb-0.5"></i><span class="text-[10px]">Keberangkatan</span>`;
-                }
-                if (headerSub) headerSub.innerText = 'Kedatangan (Arrival)';
-            } else {
-                if (navDep) {
-                    navDep.className = "flex-1 h-full flex flex-col items-center justify-center gap-1 text-blue-600 dark:text-blue-500 font-bold transition-all";
-                    navDep.innerHTML = `<i class="fa-solid fa-plane-departure text-xl mb-0.5 transform -translate-y-1 transition-transform"></i><span class="text-[10px]">Keberangkatan</span>`;
-                }
-                if (navArr) {
-                    navArr.className = "flex-1 h-full flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 font-semibold transition-all";
-                    navArr.innerHTML = `<i class="fa-solid fa-plane-arrival text-lg mb-0.5"></i><span class="text-[10px]">Kedatangan</span>`;
-                }
-                if (headerSub) headerSub.innerText = 'Keberangkatan (Departure)';
-            }
-
-            const searchIn = document.getElementById('searchInput');
-            if (searchIn) searchIn.value = '';
-            const clearBtn = document.getElementById('clearSearchBtn');
-            if (clearBtn) clearBtn.classList.add('hidden');
-            
-            renderFilterTabs();
-            applyFilteringAndSorting();
-        }
-
-        function renderFilterTabs() {
-            const container = document.getElementById('statusFilterTabs');
-            if (!container) return;
-
-            if (masterType === 'ARRIVAL') {
-                container.innerHTML = `
-                    <button onclick="setStatusFilter('ALL')" data-tab="ALL" class="tab-btn px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap bg-slate-900 text-white dark:bg-white dark:text-slate-900 transition-colors">
-                        Semua <span id="badgeCountALL" class="ml-1 opacity-75 font-mono text-[10px]">0</span>
-                    </button>
-                    <button onclick="setStatusFilter('LANDED')" data-tab="LANDED" class="tab-btn px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 transition-colors">
-                        Landed <span id="badgeCountLANDED" class="ml-1 opacity-75 font-mono text-[10px]">0</span>
-                    </button>
-                    <button onclick="setStatusFilter('SCHEDULED')" data-tab="SCHEDULED" class="tab-btn px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 transition-colors">
-                        Scheduled <span id="badgeCountSCHEDULED" class="ml-1 opacity-75 font-mono text-[10px]">0</span>
-                    </button>
-                `;
-            } else {
-                container.innerHTML = `
-                    <button onclick="setStatusFilter('ALL')" data-tab="ALL" class="tab-btn px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap bg-slate-900 text-white dark:bg-white dark:text-slate-900 transition-colors">
-                        Semua <span id="badgeCountALL" class="ml-1 opacity-75 font-mono text-[10px]">0</span>
-                    </button>
-                    <button onclick="setStatusFilter('OPEN')" data-tab="OPEN" class="tab-btn px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 transition-colors">
-                        Open <span id="badgeCountOPEN" class="ml-1 opacity-75 font-mono text-[10px]">0</span>
-                    </button>
-                    <button onclick="setStatusFilter('BOARDING')" data-tab="BOARDING" class="tab-btn px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 transition-colors">
-                        Boarding <span id="badgeCountBOARDING" class="ml-1 opacity-75 font-mono text-[10px]">0</span>
-                    </button>
-                    <button onclick="setStatusFilter('DEPARTED')" data-tab="DEPARTED" class="tab-btn px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 transition-colors">
-                        Departed <span id="badgeCountDEPARTED" class="ml-1 opacity-75 font-mono text-[10px]">0</span>
-                    </button>
-                `;
-            }
-        }
-
-        function onDataLoaded(res, isSilent) {
-            arrivalDataCache = res.arrival || [];
-            departureDataCache = res.departure || [];
-            const tabs = document.getElementById('statusFilterTabs');
-            if (tabs && !tabs.innerHTML.trim()) {
-                renderFilterTabs();
-            }
-            applyFilteringAndSorting();
-            const overlay = document.getElementById('loadingOverlay');
-            if (!isSilent && overlay) overlay.classList.add('hidden');
-        }
-
-        function onDataLoadError(err, isSilent) {
-            if (!isSilent) {
-                showToast('Koneksi Gagal', 'Gagal memuat data dari server.', 'error');
-                const overlay = document.getElementById('loadingOverlay');
-                if (overlay) overlay.classList.add('hidden');
-            }
-        }
-
-        function calculateFlightStatus(item) {
-            if (masterType === 'ARRIVAL') {
-                if (item.aibt && item.aibt.trim() !== '') {
-                    return { key: 'LANDED', label: 'LANDED', bg: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/60', dot: 'bg-emerald-500', info: `Tiba ${item.aibt}`, priority: 2 };
-                }
-                return { key: 'SCHEDULED', label: 'SCHEDULED', bg: 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 border-blue-200 dark:border-blue-800/60', dot: 'bg-blue-500 animate-pulse', info: 'Menunggu', priority: 1 };
-            } else {
-                const now = new Date();
-                const cur = now.getHours() * 60 + now.getMinutes();
-                const buka = timeToMinutes(item.jamBuka);
-                const tutup = timeToMinutes(item.jamTutup);
-                const departure = timeToMinutes(item.std);
-
-                if (buka !== -1 && tutup !== -1 && cur >= buka && cur <= tutup) {
-                    const sisaMenit = tutup - cur;
-                    return { key: 'OPEN', label: 'OPEN', bg: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/60', dot: 'bg-emerald-500 animate-pulse', info: `Tutup dlm ${sisaMenit}m`, priority: 1 };
-                }
-                if (tutup !== -1 && cur > tutup && (departure === -1 || cur <= departure)) {
-                    return { key: 'BOARDING', label: 'BOARDING', bg: 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 border-amber-200 dark:border-amber-800/60', dot: 'bg-amber-500', info: 'Counter Tutup', priority: 2 };
-                }
-                if (departure !== -1 && cur > departure) {
-                    return { key: 'DEPARTED', label: 'DEPARTED', bg: 'bg-slate-200 text-slate-500 dark:bg-slate-800 dark:text-slate-400 border-slate-300 dark:border-slate-700', dot: 'bg-slate-400', info: 'Berangkat', priority: 4 };
-                }
-                const sisaBuka = buka - cur;
-                return { key: 'UPCOMING', label: 'UPCOMING', bg: 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 border-blue-200 dark:border-blue-800/60', dot: 'bg-blue-500', info: (sisaBuka > 0) ? `Buka dlm ${sisaBuka}m` : `Buka ${item.jamBuka || '--:--'}`, priority: 3 };
-            }
-        }
-
-        function timeToMinutes(timeStr) {
-            if (!timeStr || !timeStr.includes(':')) return -1;
-            const parts = timeStr.split(':');
-            return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
-        }
-
-        function autoCalculateDepTimes(stdVal) {
-            if (!stdVal) return;
-            let val = stdVal.trim();
-            if (val.length === 4 && !val.includes(':') && !isNaN(val)) {
-                val = val.substring(0, 2) + ':' + val.substring(2);
-                const stdInput = document.getElementById('dep-std');
-                if (stdInput) stdInput.value = val;
-            }
-            if (/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(val)) {
-                const parts = val.split(':');
-                const hours = parseInt(parts[0], 10);
-                const mins = parseInt(parts[1], 10);
-                const totalMins = hours * 60 + mins;
-
-                let openMins = (totalMins - 180 + 1440) % 1440;
-                let openH = String(Math.floor(openMins / 60)).padStart(2, '0');
-                let openM = String(openMins % 60).padStart(2, '0');
-
-                let closeMins = (totalMins - 40 + 1440) % 1440;
-                let closeH = String(Math.floor(closeMins / 60)).padStart(2, '0');
-                let closeM = String(closeMins % 60).padStart(2, '0');
-
-                const bukaInput = document.getElementById('dep-jamBuka');
-                const tutupInput = document.getElementById('dep-jamTutup');
-                if (bukaInput) bukaInput.value = `${openH}:${openM}`;
-                if (tutupInput) tutupInput.value = `${closeH}:${closeM}`;
-            }
-        }
-
-        function setStatusFilter(statusKey) {
-            activeStatusFilter = statusKey;
-            document.querySelectorAll('#statusFilterTabs button').forEach(btn => {
-                if (btn.getAttribute('data-tab') === statusKey) {
-                    btn.className = "tab-btn px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap bg-slate-900 text-white dark:bg-white dark:text-slate-900 transition-colors shadow-md shadow-slate-900/10 dark:shadow-white/10";
-                } else {
-                    btn.className = "tab-btn px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 transition-colors";
-                }
-            });
-            applyFilteringAndSorting();
-        }
-
-        function handleSearch() {
-            const input = document.getElementById('searchInput');
-            const clearBtn = document.getElementById('clearSearchBtn');
-            if (input && clearBtn) {
-                const val = input.value.trim();
-                clearBtn.classList.toggle('hidden', val === '');
-            }
-            applyFilteringAndSorting();
-        }
-
-        function clearSearch() {
-            const input = document.getElementById('searchInput');
-            const clearBtn = document.getElementById('clearSearchBtn');
-            if (input) input.value = '';
-            if (clearBtn) clearBtn.classList.add('hidden');
-            applyFilteringAndSorting();
-        }
-
-        function applyFilteringAndSorting() {
-            const currentList = masterType === 'ARRIVAL' ? arrivalDataCache : departureDataCache;
-            const counts = { ALL: currentList.length };
-            currentList.forEach(item => {
-                const st = calculateFlightStatus(item).key;
-                counts[st] = (counts[st] || 0) + 1;
-            });
-            Object.keys(counts).forEach(key => {
-                const badge = document.getElementById(`badgeCount${key}`);
-                if (badge) badge.innerText = counts[key];
-            });
-
-            const searchIn = document.getElementById('searchInput');
-            const term = searchIn ? searchIn.value.toLowerCase().trim() : '';
-
-            filteredData = currentList.filter(item => {
-                const status = calculateFlightStatus(item);
-                if (activeStatusFilter !== 'ALL' && status.key !== activeStatusFilter) return false;
-                if (term !== '') {
-                    const str = masterType === 'ARRIVAL' 
-                        ? `${item.groundHandling} ${item.noFlight} ${item.origin} ${item.bcbNo} ${item.parkingStand}`.toLowerCase()
-                        : `${item.desk} ${item.maskapai} ${item.flightNo} ${item.dos} ${item.tipePesawat}`.toLowerCase();
-                    return str.includes(term);
-                }
-                return true;
-            });
-
-            filteredData.sort((a, b) => calculateFlightStatus(a).priority - calculateFlightStatus(b).priority);
-            renderMobileCards();
-        }
-
-        function renderMobileCards() {
-            const container = document.getElementById('mobileCardList');
-            const emptyState = document.getElementById('emptyState');
-            if (!container || !emptyState) return;
-            
-            container.innerHTML = '';
-
-            if (filteredData.length === 0) {
-                emptyState.classList.remove('hidden');
-                return;
-            } else {
-                emptyState.classList.add('hidden');
-            }
-
-            filteredData.forEach(row => {
-                const status = calculateFlightStatus(row);
-                const card = document.createElement('div');
-                card.className = "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm transition-transform active:scale-[0.98]";
-                
-                card.onclick = () => {
-                    const detail = document.getElementById(`card-detail-${row.id}`);
-                    if(detail) detail.classList.toggle('hidden');
-                };
-
-                if (masterType === 'ARRIVAL') {
-                    card.innerHTML = `
-                        <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-                            <div class="flex items-center gap-2 min-w-0">
-                                <span class="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded font-bold text-[10px] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">${row.groundHandling || '-'}</span>
-                                <span class="font-mono font-bold text-sm text-blue-600 dark:text-blue-400 truncate">${row.noFlight || '-'}</span>
-                            </div>
-                            <span class="px-2.5 py-1 rounded-lg border text-[9px] font-bold uppercase flex items-center gap-1.5 flex-shrink-0 ${status.bg}">
-                                <span class="w-1.5 h-1.5 rounded-full ${status.dot}"></span>
-                                ${status.label}
-                            </span>
-                        </div>
-                        <div class="flex items-center justify-between pt-3">
-                            <div class="min-w-0">
-                                <h4 class="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">Asal: <span class="font-mono font-bold text-slate-900 dark:text-white">${row.origin || '-'}</span></h4>
-                                <p class="text-[10px] text-slate-500 font-medium mt-1 truncate">Stand: <span class="font-mono text-slate-700 dark:text-slate-300 font-bold">${row.parkingStand || '-'}</span></p>
-                            </div>
-                            <div class="text-right flex-shrink-0 bg-slate-50 dark:bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-100 dark:border-slate-800">
-                                <span class="text-[9px] font-bold text-slate-400 uppercase block mb-0.5">Aktual (AIBT)</span>
-                                <span class="font-mono font-extrabold text-sm text-slate-900 dark:text-white">${row.aibt || '--:--'}</span>
-                            </div>
-                        </div>
-                        <div id="card-detail-${row.id}" class="hidden mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 animate-fade">
-                            <div class="flex flex-col gap-2 mb-3">
-                                <div class="bg-slate-50 dark:bg-slate-950/50 p-2.5 rounded-xl text-xs flex justify-between items-center border border-slate-100 dark:border-slate-800/80">
-                                    <span class="text-slate-500">BCB No:</span>
-                                    <span class="font-mono font-bold">${row.bcbNo || '-'}</span>
-                                </div>
-                            </div>
-                            <div class="flex gap-2">
-                                <button onclick="event.stopPropagation(); openModal(${row.id})" class="flex-1 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold active:scale-95 transition-transform flex items-center justify-center gap-2">
-                                    <i class="fa-solid fa-pen-to-square"></i> Edit
-                                </button>
-                                <button onclick="event.stopPropagation(); confirmDeleteFlight(${row.id}, '${row.noFlight}')" class="flex-1 py-2.5 bg-rose-50 text-rose-600 dark:bg-rose-950/30 dark:text-rose-400 rounded-xl text-xs font-bold active:scale-95 transition-transform flex items-center justify-center gap-2">
-                                    <i class="fa-solid fa-trash-can"></i> Hapus
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <!-- AIBT Input -->
+                        <div>
+                            <label class="block text-[10px] font-black text-cyan-400 uppercase mb-1">Jam AIBT</label>
+                            <div class="flex gap-1.5">
+                                <input type="time" id="inAibt" oninput="updateReport()" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs outline-none focus:border-cyan-500 text-white">
+                                <button type="button" onclick="setNowTime('inAibt')" class="bg-cyan-600 hover:bg-cyan-500 text-white px-2.5 rounded-xl flex items-center justify-center transition-all active:scale-95">
+                                    <i class="fas fa-clock text-xs"></i>
                                 </button>
                             </div>
                         </div>
-                    `;
-                } else {
-                    card.innerHTML = `
-                        <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-                            <div class="flex items-center gap-2 min-w-0">
-                                <span class="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded font-mono text-[10px] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 font-bold">${row.desk || '-'}</span>
-                                <span class="font-mono font-bold text-sm text-blue-600 dark:text-blue-400 truncate">${row.flightNo || '-'}</span>
-                            </div>
-                            <span class="px-2.5 py-1 rounded-lg border text-[9px] font-bold uppercase flex items-center gap-1.5 flex-shrink-0 ${status.bg}">
-                                <span class="w-1.5 h-1.5 rounded-full ${status.dot}"></span>
-                                ${status.label}
-                            </span>
-                        </div>
-                        <div class="flex items-center justify-between pt-3">
-                            <div class="min-w-0 pr-2">
-                                <h4 class="text-xs font-bold text-slate-900 dark:text-white truncate mb-1">${row.maskapai || '-'}</h4>
-                                <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-slate-50 dark:bg-slate-950 text-[10px] text-slate-500 border border-slate-100 dark:border-slate-800">
-                                    <i class="fa-regular fa-clock text-[9px]"></i>
-                                    <span>${status.info}</span>
-                                </div>
-                            </div>
-                            <div class="text-right flex-shrink-0 bg-slate-50 dark:bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-100 dark:border-slate-800">
-                                <span class="text-[9px] font-bold text-slate-400 uppercase block mb-0.5">Jadwal (STD)</span>
-                                <span class="font-mono font-extrabold text-sm text-slate-900 dark:text-white">${row.std || '--:--'}</span>
-                            </div>
-                        </div>
-                        <div id="card-detail-${row.id}" class="hidden mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 animate-fade">
-                            <div class="grid grid-cols-2 gap-2 mb-3">
-                                <div class="bg-slate-50 dark:bg-slate-950/50 p-2.5 rounded-xl text-[10px] flex flex-col gap-1 border border-slate-100 dark:border-slate-800/80">
-                                    <span class="text-slate-400 uppercase font-bold">Rute (DOS)</span>
-                                    <span class="font-mono font-bold text-slate-800 dark:text-slate-200 text-xs">${row.dos || '-'}</span>
-                                </div>
-                                <div class="bg-slate-50 dark:bg-slate-950/50 p-2.5 rounded-xl text-[10px] flex flex-col gap-1 border border-slate-100 dark:border-slate-800/80">
-                                    <span class="text-slate-400 uppercase font-bold">Tipe Pesawat</span>
-                                    <span class="font-semibold text-slate-800 dark:text-slate-200 text-xs">${row.tipePesawat || '-'}</span>
-                                </div>
-                            </div>
-                            <div class="flex gap-2">
-                                <button onclick="event.stopPropagation(); openModal(${row.id})" class="flex-1 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold active:scale-95 transition-transform flex items-center justify-center gap-2">
-                                    <i class="fa-solid fa-pen-to-square"></i> Edit
+
+                        <!-- FIBAG Input -->
+                        <div>
+                            <label class="flex justify-between items-center text-[10px] font-black text-emerald-400 uppercase mb-1">
+                                <span>Jam FIBAG</span>
+                                <span id="uiStatusFibag"></span>
+                            </label>
+                            <div class="flex gap-1.5 mb-1">
+                                <input type="time" id="inFibag" oninput="updateReport()" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs outline-none focus:border-emerald-500 text-white">
+                                <button type="button" onclick="setNowTime('inFibag')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 rounded-xl flex items-center justify-center transition-all active:scale-95">
+                                    <i class="fas fa-clock text-xs"></i>
                                 </button>
-                                <button onclick="event.stopPropagation(); confirmDeleteFlight(${row.id}, '${row.flightNo}')" class="flex-1 py-2.5 bg-rose-50 text-rose-600 dark:bg-rose-950/30 dark:text-rose-400 rounded-xl text-xs font-bold active:scale-95 transition-transform flex items-center justify-center gap-2">
-                                    <i class="fa-solid fa-trash-can"></i> Hapus
+                                <button type="button" onclick="document.getElementById('fibagFileInput').click()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 rounded-xl flex items-center justify-center border border-slate-700 active:scale-95 transition-all" title="Ambil Foto">
+                                    <i class="fas fa-camera text-xs"></i>
                                 </button>
+                                <input type="file" id="fibagFileInput" class="hidden" accept="image/*" onchange="compressAndUploadPhoto(this, 'fibag')">
+                            </div>
+                            <div class="relative group">
+                                <img id="prevFibag" class="photo-preview hidden">
+                                <button id="btnDelFibag" onclick="clearPhoto('fibag')" class="hidden absolute top-1.5 right-1.5 bg-red-600 text-white text-[8px] p-1 rounded-full"><i class="fas fa-times"></i></button>
                             </div>
                         </div>
-                    `;
-                }
-                container.appendChild(card);
-            });
-        }
 
-        function openModal(id = null) {
-            const form = document.getElementById('flightForm');
-            if (form) form.reset();
-            const recEl = document.getElementById('recordId');
-            if (recEl) recEl.value = '';
-            
-            const headerLabel = document.getElementById('modalHeaderLabel');
-            const dynamicFields = document.getElementById('dynamicFormFields');
-            const currentList = masterType === 'ARRIVAL' ? arrivalDataCache : departureDataCache;
-            const record = id !== null ? currentList.find(r => r.id === id) : null;
-
-            if (masterType === 'ARRIVAL') {
-                if (headerLabel) headerLabel.innerText = record ? 'Edit Kedatangan' : 'Entri Kedatangan';
-                if (dynamicFields) {
-                    dynamicFields.innerHTML = `
-                        <div class="space-y-3">
-                            <div>
-                                <label class="block text-[11px] font-bold text-slate-500 mb-1.5 px-1">No Flight & Ground Handling</label>
-                                <div class="flex gap-2">
-                                    <input type="text" id="arr-noFlight" required class="w-3/5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-mono font-bold outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all uppercase" placeholder="GA 183">
-                                    <input type="text" id="arr-groundHandling" required class="w-2/5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-semibold outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all uppercase" placeholder="GAPURA">
-                                </div>
+                        <!-- LASTBAG Input -->
+                        <div>
+                            <label class="flex justify-between items-center text-[10px] font-black text-indigo-400 uppercase mb-1">
+                                <span>Jam LASTBAG</span>
+                                <span id="uiStatusLabag"></span>
+                            </label>
+                            <div class="flex gap-1.5 mb-1">
+                                <input type="time" id="inLabag" oninput="updateReport()" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs outline-none focus:border-indigo-500 text-white">
+                                <button type="button" onclick="setNowTime('inLabag')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-2.5 rounded-xl flex items-center justify-center transition-all active:scale-95">
+                                    <i class="fas fa-clock text-xs"></i>
+                                </button>
+                                <button type="button" onclick="document.getElementById('labagFileInput').click()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 rounded-xl flex items-center justify-center border border-slate-700 active:scale-95 transition-all" title="Ambil Foto">
+                                    <i class="fas fa-camera text-xs"></i>
+                                </button>
+                                <input type="file" id="labagFileInput" class="hidden" accept="image/*" onchange="compressAndUploadPhoto(this, 'labag')">
                             </div>
-                            <div class="grid grid-cols-2 gap-2">
-                                <div>
-                                    <label class="block text-[11px] font-bold text-slate-500 mb-1.5 px-1">Origin (Asal)</label>
-                                    <input type="text" id="arr-origin" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-mono font-bold outline-none focus:border-blue-500 transition-all uppercase" placeholder="KNO">
-                                </div>
-                                <div>
-                                    <label class="block text-[11px] font-bold text-slate-500 mb-1.5 px-1">Parking Stand</label>
-                                    <input type="text" id="arr-parkingStand" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-mono font-bold outline-none focus:border-blue-500 transition-all uppercase" placeholder="B3">
-                                </div>
-                            </div>
-                            <div class="grid grid-cols-2 gap-2">
-                                <div>
-                                    <label class="block text-[11px] font-bold text-slate-500 mb-1.5 px-1">BCB No</label>
-                                    <input type="text" id="arr-bcbNo" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-mono font-bold outline-none focus:border-blue-500 transition-all uppercase" placeholder="BCB-001">
-                                </div>
-                                <div>
-                                    <label class="block text-[11px] font-bold text-slate-500 mb-1.5 px-1 text-blue-600 dark:text-blue-400">AIBT (Jam Tiba)</label>
-                                    <input type="time" id="arr-aibt" class="w-full bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 rounded-xl px-4 py-3 text-sm font-mono font-bold outline-none focus:border-blue-500 transition-all text-center">
-                                </div>
+                            <div class="relative group">
+                                <img id="prevLabag" class="photo-preview hidden">
+                                <button id="btnDelLabag" onclick="clearPhoto('labag')" class="hidden absolute top-1.5 right-1.5 bg-red-600 text-white text-[8px] p-1 rounded-full"><i class="fas fa-times"></i></button>
                             </div>
                         </div>
-                    `;
-                }
-                if (record) {
-                    if (recEl) recEl.value = record.id;
-                    const gh = document.getElementById('arr-groundHandling'); if (gh) gh.value = record.groundHandling || '';
-                    const nf = document.getElementById('arr-noFlight'); if (nf) nf.value = record.noFlight || '';
-                    const ori = document.getElementById('arr-origin'); if (ori) ori.value = record.origin || '';
-                    const bcb = document.getElementById('arr-bcbNo'); if (bcb) bcb.value = record.bcbNo || '';
-                    const ps = document.getElementById('arr-parkingStand'); if (ps) ps.value = record.parkingStand || '';
-                    const aibt = document.getElementById('arr-aibt'); if (aibt) aibt.value = record.aibt || '';
-                }
-            } else {
-                if (headerLabel) headerLabel.innerText = record ? 'Edit Keberangkatan' : 'Entri Keberangkatan';
-                if (dynamicFields) {
-                    dynamicFields.innerHTML = `
-                        <div class="space-y-3">
-                            <div class="grid grid-cols-2 gap-2">
-                                <div>
-                                    <label class="block text-[11px] font-bold text-slate-500 mb-1.5 px-1">No Flight</label>
-                                    <input type="text" id="dep-flightNo" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-mono font-bold outline-none focus:border-blue-500 transition-all uppercase" placeholder="GA 182">
-                                </div>
-                                <div>
-                                    <label class="block text-[11px] font-bold text-slate-500 mb-1.5 px-1">Desk Counter</label>
-                                    <input type="text" id="dep-desk" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-semibold outline-none focus:border-blue-500 transition-all uppercase" placeholder="D10-D12">
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-[11px] font-bold text-slate-500 mb-1.5 px-1">Maskapai</label>
-                                <input type="text" id="dep-maskapai" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-semibold outline-none focus:border-blue-500 transition-all" placeholder="Garuda Indonesia">
-                            </div>
-                            <div class="grid grid-cols-2 gap-2">
-                                <div>
-                                    <label class="block text-[11px] font-bold text-slate-500 mb-1.5 px-1">Rute / DOS</label>
-                                    <input type="text" id="dep-dos" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-mono font-bold outline-none focus:border-blue-500 transition-all uppercase" placeholder="CGK-KNO">
-                                </div>
-                                <div>
-                                    <label class="block text-[11px] font-bold text-slate-500 mb-1.5 px-1">Tipe Pesawat</label>
-                                    <input type="text" id="dep-tipePesawat" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-semibold outline-none focus:border-blue-500 transition-all uppercase" placeholder="B737-800">
-                                </div>
-                            </div>
-                            
-                            <div class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 rounded-xl">
-                                <div class="mb-3">
-                                    <label class="block text-xs font-bold text-blue-600 dark:text-blue-400 mb-1.5 text-center">Jadwal Keberangkatan (STD)</label>
-                                    <input type="text" id="dep-std" oninput="autoCalculateDepTimes(this.value)" required class="w-full bg-white dark:bg-slate-950 border-2 border-blue-200 dark:border-blue-800 rounded-xl py-3 text-base font-mono font-bold text-center text-slate-900 dark:text-white outline-none focus:border-blue-500 transition-all" placeholder="06:45">
-                                </div>
-                                <div class="grid grid-cols-2 gap-2">
-                                    <div>
-                                        <label class="block text-[10px] font-bold text-slate-500 mb-1 text-center">Buka (-3 Jam)</label>
-                                        <input type="time" id="dep-jamBuka" class="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg py-2.5 text-sm font-mono font-bold text-center text-slate-700 dark:text-slate-300 outline-none" required>
-                                    </div>
-                                    <div>
-                                        <label class="block text-[10px] font-bold text-slate-500 mb-1 text-center">Tutup (-40 Menit)</label>
-                                        <input type="time" id="dep-jamTutup" class="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg py-2.5 text-sm font-mono font-bold text-center text-slate-700 dark:text-slate-300 outline-none" required>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }
-                if (record) {
-                    if (recEl) recEl.value = record.id;
-                    const desk = document.getElementById('dep-desk'); if (desk) desk.value = record.desk || '';
-                    const fn = document.getElementById('dep-flightNo'); if (fn) fn.value = record.flightNo || '';
-                    const mask = document.getElementById('dep-maskapai'); if (mask) mask.value = record.maskapai || '';
-                    const dos = document.getElementById('dep-dos'); if (dos) dos.value = record.dos || '';
-                    const tp = document.getElementById('dep-tipePesawat'); if (tp) tp.value = record.tipePesawat || '';
-                    const std = document.getElementById('dep-std'); if (std) std.value = record.std || '';
-                    const jb = document.getElementById('dep-jamBuka'); if (jb) jb.value = record.jamBuka || '';
-                    const jt = document.getElementById('dep-jamTutup'); if (jt) jt.value = record.jamTutup || '';
-                }
-            }
+                    </div>
 
-            const backdrop = document.getElementById('modalBackdrop');
-            const modal = document.getElementById('formModal');
-            if (backdrop && modal) {
-                backdrop.classList.remove('hidden');
-                modal.classList.remove('hidden');
-                void modal.offsetWidth; 
-                backdrop.classList.remove('opacity-0');
-                modal.classList.remove('translate-y-full');
-            }
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-1">Reason (Jika Not Achieve)</label>
+                        <select id="inReason" onchange="updateReport()" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm focus:border-blue-500 text-white outline-none">
+                            <option value="">-- Pilih Reason --</option>
+                            <option value="Data telat tampil">Data telat tampil</option>
+                            <option value="Man power">Man power</option>
+                            <option value="Clearance & special check">Clearance & special check</option>
+                            <option value="Weather">Weather</option>
+                            <option value="Equipment">Equipment</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <!-- Footer Buttons -->
+            <div class="p-6 border-t border-slate-800 flex flex-wrap justify-center items-center gap-4 bg-slate-900">
+                <div class="btn-icon-container">
+                    <button onclick="saveData(false)" class="w-11 h-11 bg-emerald-600 hover:bg-emerald-500 text-white rounded-full flex items-center justify-center shadow-lg active:scale-90 transition-all text-sm"><i class="fas fa-save"></i></button>
+                    <span class="btn-icon-label">Simpan</span>
+                </div>
+                <div class="btn-icon-container">
+                    <button onclick="saveData(true)" class="w-11 h-11 bg-blue-600 hover:bg-blue-500 text-white rounded-full flex items-center justify-center shadow-lg active:scale-90 transition-all text-sm"><i class="fas fa-copy"></i></button>
+                    <span class="btn-icon-label">Copy Teks</span>
+                </div>
+                <div class="btn-icon-container">
+                    <button onclick="shareDirectlyToSystem()" class="w-11 h-11 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full flex items-center justify-center shadow-lg active:scale-90 transition-all text-sm"><i class="fas fa-share-nodes text-sm"></i></button>
+                    <span class="btn-icon-label">Share HP<br>(Foto+Teks)</span>
+                </div>
+                <div class="btn-icon-container">
+                    <button onclick="closeModal()" class="w-11 h-11 bg-slate-800 text-slate-400 rounded-full flex items-center justify-center border border-slate-700 active:scale-90 transition-all text-sm"><i class="fas fa-times"></i></button>
+                    <span class="btn-icon-label">Batal</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="groundingModal" class="hidden fixed inset-0 z-[110] flex items-center justify-center p-4 modal-blur">
+        <div class="bg-slate-900 w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden flex flex-col border border-slate-800">
+            <div class="bg-gradient-to-r from-emerald-600 to-teal-700 p-5 flex justify-between items-center text-white border-b border-slate-800">
+                <div class="flex items-center gap-2.5">
+                    <i class="fab fa-google text-lg text-emerald-400"></i>
+                    <h3 class="font-black uppercase text-xs tracking-widest">Google Grounding Lookup</h3>
+                </div>
+                <button onclick="closeGroundingSearch()" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-800 text-white transition-all active:scale-90">
+                    <i class="fas fa-times text-xs"></i>
+                </button>
+            </div>
+            <div class="p-6 space-y-4">
+                <p class="text-slate-400 text-[10px] leading-relaxed uppercase font-black">Cari data penerbangan CGK secara langsung di Google untuk akurasi data real-time.</p>
+                <div class="flex gap-2">
+                    <input type="text" id="groundingFlightQuery" placeholder="Contoh: GA 821 atau SQ956" class="w-full border border-slate-800 bg-slate-950 rounded-xl px-4 py-3 text-sm focus:border-emerald-500 text-white outline-none font-bold uppercase">
+                    <button onclick="runGlobalGoogleGrounding()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-5 rounded-xl transition-all font-bold text-xs active:scale-95 flex items-center gap-1.5 shadow-md">
+                        <i class="fas fa-search"></i> Grounding
+                    </button>
+                </div>
+                <div id="groundingResultArea" class="hidden border border-slate-800 rounded-2xl p-4 bg-slate-950/60 space-y-4">
+                    <!-- Dynamic Output Grounding -->
+                </div>
+                <div id="groundingLoader" class="hidden py-8 text-center">
+                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-emerald-500 border-t-transparent mb-3"></div>
+                    <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Grounding Search & AI Google Sync...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="lightbox" class="hidden fixed inset-0 z-[200] bg-black/95 flex items-center justify-center p-4 cursor-pointer" onclick="this.classList.add('hidden')">
+        <img id="lightboxImg" class="max-w-full max-h-full rounded-xl shadow-2xl border border-slate-800">
+    </div>
+
+    <div id="toast" class="fixed top-6 left-1/2 -translate-x-1/2 bg-slate-900 border border-blue-800 text-white px-8 py-3 rounded-full text-xs font-black uppercase tracking-widest opacity-0 transition-opacity z-[200] pointer-events-none shadow-2xl">Disalin!</div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        let firebaseConfig;
+        try {
+            firebaseConfig = typeof __firebase_config !== 'undefined' && __firebase_config ? JSON.parse(__firebase_config) : null;
+        } catch (e) {
+            console.error("Gagal melakukan parse __firebase_config:", e);
         }
 
-        function closeModal() {
-            const backdrop = document.getElementById('modalBackdrop');
-            const modal = document.getElementById('formModal');
-            if (!backdrop || !modal) return;
-            
-            backdrop.classList.add('opacity-0');
-            modal.classList.add('translate-y-full');
-            
-            setTimeout(() => {
-                backdrop.classList.add('hidden');
-                modal.classList.add('hidden');
-            }, 300);
-        }
-
-        function saveData() {
-            let record = { 
-                type: masterType,
-                id: document.getElementById('recordId') ? document.getElementById('recordId').value : '' 
+        if (!firebaseConfig) {
+            firebaseConfig = {
+                apiKey: "mock-key",
+                authDomain: "mock-domain.firebaseapp.com",
+                projectId: "mock-project",
+                storageBucket: "mock-project.appspot.com",
+                messagingSenderId: "12345",
+                appId: "1:12345:web:mock"
             };
-
-            if (masterType === 'ARRIVAL') {
-                record.groundHandling = (document.getElementById('arr-groundHandling') ? document.getElementById('arr-groundHandling').value : '').trim().toUpperCase();
-                record.noFlight = (document.getElementById('arr-noFlight') ? document.getElementById('arr-noFlight').value : '').trim().toUpperCase();
-                record.origin = (document.getElementById('arr-origin') ? document.getElementById('arr-origin').value : '').trim().toUpperCase();
-                record.bcbNo = (document.getElementById('arr-bcbNo') ? document.getElementById('arr-bcbNo').value : '').trim().toUpperCase();
-                record.parkingStand = (document.getElementById('arr-parkingStand') ? document.getElementById('arr-parkingStand').value : '').trim().toUpperCase();
-                record.aibt = (document.getElementById('arr-aibt') ? document.getElementById('arr-aibt').value : '').trim();
-            } else {
-                record.desk = (document.getElementById('dep-desk') ? document.getElementById('dep-desk').value : '').trim().toUpperCase();
-                record.flightNo = (document.getElementById('dep-flightNo') ? document.getElementById('dep-flightNo').value : '').trim().toUpperCase();
-                record.maskapai = (document.getElementById('dep-maskapai') ? document.getElementById('dep-maskapai').value : '').trim();
-                record.dos = (document.getElementById('dep-dos') ? document.getElementById('dep-dos').value : '').trim().toUpperCase();
-                record.tipePesawat = (document.getElementById('dep-tipePesawat') ? document.getElementById('dep-tipePesawat').value : '').trim().toUpperCase();
-                record.std = (document.getElementById('dep-std') ? document.getElementById('dep-std').value : '').trim();
-                record.jamBuka = (document.getElementById('dep-jamBuka') ? document.getElementById('dep-jamBuka').value : '').trim();
-                record.jamTutup = (document.getElementById('dep-jamTutup') ? document.getElementById('dep-jamTutup').value : '').trim();
-            }
-
-            const btnSave = document.getElementById('btnSave');
-            const btnText = document.getElementById('btnSaveText');
-            const spinner = document.getElementById('btnSaveSpinner');
-
-            if (btnSave) btnSave.disabled = true;
-            if (btnText) btnText.innerText = 'Menyimpan...';
-            if (spinner) spinner.classList.remove('hidden');
-
-            if (typeof google !== 'undefined' && google.script && google.script.run) {
-                google.script.run
-                    .withSuccessHandler(res => {
-                        resetFormBtn();
-                        closeModal();
-                        showToast('Tersimpan', res.message || 'Data berhasil disimpan.', 'success');
-                        playChime('success');
-                        loadData();
-                    })
-                    .withFailureHandler(err => {
-                        resetFormBtn();
-                        showToast('Gagal', err.toString(), 'error');
-                        playChime('error');
-                    })
-                    .saveFlightData(record);
-            } else {
-                // Pengiriman data via Fetch POST (GitHub Pages Deployment)
-                fetch(GAS_API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({ action: 'save', record: record })
-                })
-                .then(r => r.json())
-                .then(res => {
-                    resetFormBtn();
-                    closeModal();
-                    showToast('Tersimpan', res.message || 'Data berhasil disimpan.', 'success');
-                    playChime('success');
-                    loadData();
-                })
-                .catch(err => {
-                    resetFormBtn();
-                    closeModal();
-                    showToast('Tersimpan', 'Data diperbarui secara lokal.', 'success');
-                    playChime('success');
-                    loadData();
-                });
-            }
-
-            function resetFormBtn() {
-                if (btnSave) btnSave.disabled = false;
-                if (btnText) btnText.innerText = 'Simpan Data';
-                if (spinner) spinner.classList.add('hidden');
-            }
         }
 
-        let pendingDeleteId = null;
-        function confirmDeleteFlight(id, flightNo) {
-            pendingDeleteId = id;
-            const target = document.getElementById('deleteFlightNoTarget');
-            if (target) target.innerText = flightNo;
-            
-            const backdrop = document.getElementById('deleteModalBackdrop');
-            const modal = document.getElementById('deleteModal');
-            
-            if (backdrop && modal) {
-                backdrop.classList.remove('hidden');
-                modal.classList.remove('hidden');
-                void modal.offsetWidth;
-                backdrop.classList.remove('opacity-0');
-            }
-        }
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
-        function closeDeleteModal() {
-            const backdrop = document.getElementById('deleteModalBackdrop');
-            const modal = document.getElementById('deleteModal');
-            if (backdrop) backdrop.classList.add('opacity-0');
-            
-            setTimeout(() => {
-                if (backdrop) backdrop.classList.add('hidden');
-                if (modal) modal.classList.add('hidden');
-                pendingDeleteId = null;
-            }, 200);
-        }
+        const REFRESH_RATE = 120;
+        const BUSY_LIMIT = 3;
+        const SHEET_ID = '1U9IUqyG6-oNUsbH6WX9ZhEwjKhwNhfgu6-J8267MdqQ';
+        const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`;
 
-        function executeDeleteFlight() {
-            if (!pendingDeleteId) return;
+        let allData = [
+            // Garuda Indonesia (Internasional)
+            { id: 1, time: "00:35", flight: "GA 895", origin: "Shanghai (PVG)", stand: "G4", bcb: "Belt 2", gh: "GAPURA", remarks: "Scheduled" },
+            { id: 2, time: "01:15", flight: "GA 885", origin: "Tokyo Narita (NRT)", stand: "G2", bcb: "Belt 3", gh: "GAPURA", remarks: "Scheduled" },
+            { id: 3, time: "05:30", flight: "GA 891", origin: "Beijing (PEK)", stand: "G1", bcb: "Belt 1", gh: "GAPURA", remarks: "Scheduled" },
+            { id: 4, time: "06:10", flight: "GA 899", origin: "Guangzhou (CAN)", stand: "G3", bcb: "Belt 2", gh: "GAPURA", remarks: "Scheduled" },
+            { id: 5, time: "09:40", flight: "GA 825", origin: "Singapore (SIN)", stand: "G5", bcb: "Belt 4", gh: "GAPURA", remarks: "Scheduled" },
+            { id: 6, time: "12:15", flight: "GA 827", origin: "Singapore (SIN)", stand: "G6", bcb: "Belt 4", gh: "GAPURA", remarks: "Scheduled" },
+            { id: 7, time: "13:30", flight: "GA 867", origin: "Bangkok (BKK)", stand: "G7", bcb: "Belt 3", gh: "GAPURA", remarks: "Scheduled" },
+            { id: 8, time: "14:06", flight: "GA 821", origin: "Kuala Lumpur (KUL)", stand: "G2", bcb: "Belt 3", gh: "GAPURA", remarks: "Landed" },
+            { id: 9, time: "15:20", flight: "GA 879", origin: "Seoul Incheon (ICN)", stand: "G8", bcb: "Belt 2", gh: "GAPURA", remarks: "Scheduled" },
+            { id: 10, time: "16:15", flight: "GA 833", origin: "Singapore (SIN)", stand: "G4", bcb: "Belt 4", gh: "GAPURA", remarks: "Scheduled" },
+            { id: 11, time: "17:45", flight: "GA 875", origin: "Tokyo Haneda (HND)", stand: "G1", bcb: "Belt 1", gh: "GAPURA", remarks: "Scheduled" },
+            { id: 12, time: "18:50", flight: "GA 713", origin: "Sydney (SYD)", stand: "G9", bcb: "Belt 5", gh: "GAPURA", remarks: "Scheduled" },
+            { id: 13, time: "19:30", flight: "GA 717", origin: "Melbourne (MEL)", stand: "G10", bcb: "Belt 5", gh: "GAPURA", remarks: "Scheduled" },
+            { id: 14, time: "20:10", flight: "GA 861", origin: "Hong Kong (HKG)", stand: "G3", bcb: "Belt 2", gh: "GAPURA", remarks: "Scheduled" },
+            { id: 15, time: "21:15", flight: "GA 837", origin: "Singapore (SIN)", stand: "G5", bcb: "Belt 4", gh: "GAPURA", remarks: "Scheduled" },
+            { id: 16, time: "22:40", flight: "GA 981", origin: "Jeddah (JED)", stand: "G11", bcb: "Belt 6", gh: "GAPURA", remarks: "Scheduled" },
 
-            const btnConfirm = document.getElementById('btnConfirmDelete');
-            const btnText = document.getElementById('btnDeleteText');
-            const spinner = document.getElementById('btnDeleteSpinner');
+            // Singapore Airlines
+            { id: 17, time: "07:40", flight: "SQ 950", origin: "Singapore (SIN)", stand: "G11", bcb: "Belt 4", gh: "JAS", remarks: "Scheduled" },
+            { id: 18, time: "09:55", flight: "SQ 952", origin: "Singapore (SIN)", stand: "G12", bcb: "Belt 4", gh: "JAS", remarks: "Scheduled" },
+            { id: 19, time: "11:55", flight: "SQ 956", origin: "Singapore (SIN)", stand: "G11", bcb: "Belt 4", gh: "JAS", remarks: "Scheduled" },
+            { id: 20, time: "14:40", flight: "SQ 958", origin: "Singapore (SIN)", stand: "G14", bcb: "Belt 4", gh: "JAS", remarks: "Scheduled" },
+            { id: 21, time: "17:05", flight: "SQ 962", origin: "Singapore (SIN)", stand: "G12", bcb: "Belt 4", gh: "JAS", remarks: "Scheduled" },
+            { id: 22, time: "18:05", flight: "SQ 964", origin: "Singapore (SIN)", stand: "G11", bcb: "Belt 4", gh: "JAS", remarks: "Scheduled" },
+            { id: 23, time: "20:15", flight: "SQ 966", origin: "Singapore (SIN)", stand: "G15", bcb: "Belt 4", gh: "JAS", remarks: "Scheduled" },
+            { id: 24, time: "22:35", flight: "SQ 968", origin: "Singapore (SIN)", stand: "G12", bcb: "Belt 4", gh: "JAS", remarks: "Scheduled" },
 
-            if (btnConfirm) btnConfirm.disabled = true;
-            if (btnText) btnText.innerText = 'Menghapus...';
-            if (spinner) spinner.classList.remove('hidden');
+            // Etihad Airways
+            { id: 25, time: "14:25", flight: "EY 474", origin: "Abu Dhabi (AUH)", stand: "G16", bcb: "Belt 5", gh: "JAS", remarks: "Scheduled" },
+            { id: 26, time: "22:10", flight: "EY 472", origin: "Abu Dhabi (AUH)", stand: "G16", bcb: "Belt 5", gh: "JAS", remarks: "Scheduled" },
 
-            if (typeof google !== 'undefined' && google.script && google.script.run) {
-                google.script.run
-                    .withSuccessHandler(res => {
-                        finishDelete();
-                        showToast('Dihapus', 'Data penerbangan berhasil dihapus.', 'success');
-                        playChime('success');
-                        loadData();
-                    })
-                    .withFailureHandler(err => {
-                        finishDelete();
-                        showToast('Gagal', err.toString(), 'error');
-                        playChime('error');
-                    })
-                    .deleteFlightData(masterType, pendingDeleteId);
-            } else {
-                // Hapus data via Fetch POST (GitHub Pages Deployment)
-                fetch(GAS_API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({ action: 'delete', type: masterType, id: pendingDeleteId })
-                })
-                .then(r => r.json())
-                .then(res => {
-                    finishDelete();
-                    showToast('Dihapus', res.message || 'Data penerbangan berhasil dihapus.', 'success');
-                    playChime('success');
-                    loadData();
-                })
-                .catch(err => {
-                    finishDelete();
-                    showToast('Dihapus', 'Data penerbangan dihapus.', 'success');
-                    playChime('success');
-                    loadData();
-                });
-            }
+            // Turkish Airlines
+            { id: 27, time: "17:35", flight: "TK 56", origin: "Istanbul (IST)", stand: "G17", bcb: "Belt 6", gh: "GAPURA", remarks: "Scheduled" },
+            { id: 28, time: "23:50", flight: "TK 58", origin: "Istanbul (IST)", stand: "G17", bcb: "Belt 6", gh: "GAPURA", remarks: "Scheduled" },
 
-            function finishDelete() {
-                if (btnConfirm) btnConfirm.disabled = false;
-                if (btnText) btnText.innerText = 'Ya, Hapus';
-                if (spinner) spinner.classList.add('hidden');
-                closeDeleteModal();
-            }
-        }
+            // Emirates
+            { id: 29, time: "15:40", flight: "EK 356", origin: "Dubai (DXB)", stand: "G18", bcb: "Belt 6", gh: "JAS", remarks: "Scheduled" },
+            { id: 30, time: "22:15", flight: "EK 358", origin: "Dubai (DXB)", stand: "G18", bcb: "Belt 6", gh: "JAS", remarks: "Scheduled" },
 
-        function toggleTheme() {
-            document.documentElement.classList.toggle('dark');
-            const icon = document.getElementById('themeIcon');
-            if (icon) {
-                icon.className = document.documentElement.classList.contains('dark') ? "fa-solid fa-sun text-amber-400" : "fa-solid fa-moon";
-            }
-        }
+            // Qantas
+            { id: 31, time: "18:30", flight: "QF 41", origin: "Sydney (SYD)", stand: "G15", bcb: "Belt 5", gh: "JAS", remarks: "Scheduled" },
+            { id: 32, time: "19:15", flight: "QF 39", origin: "Melbourne (MEL)", stand: "G14", bcb: "Belt 5", gh: "JAS", remarks: "Scheduled" },
 
-        let toastTimer;
-        function showToast(title, message, type = 'success') {
-            const toast = document.getElementById('toast');
-            const iconBox = document.getElementById('toastIcon');
-            const progressBar = document.getElementById('toastProgressBar');
-            const titleEl = document.getElementById('toastTitle');
-            const msgEl = document.getElementById('toastMessage');
-            
-            if (!toast || !iconBox || !progressBar || !titleEl || !msgEl) return;
+            // Malaysia Airlines
+            { id: 33, time: "08:25", flight: "MH 711", origin: "Kuala Lumpur (KUL)", stand: "G6", bcb: "Belt 3", gh: "GAPURA", remarks: "Scheduled" },
+            { id: 34, time: "10:15", flight: "MH 713", origin: "Kuala Lumpur (KUL)", stand: "G7", bcb: "Belt 3", gh: "GAPURA", remarks: "Scheduled" },
+            { id: 35, time: "13:10", flight: "MH 717", origin: "Kuala Lumpur (KUL)", stand: "G6", bcb: "Belt 3", gh: "GAPURA", remarks: "Scheduled" },
+            { id: 36, time: "14:55", flight: "MH 721", origin: "Kuala Lumpur (KUL)", stand: "G8", bcb: "Belt 3", gh: "GAPURA", remarks: "Scheduled" },
+            { id: 37, time: "17:20", flight: "MH 723", origin: "Kuala Lumpur (KUL)", stand: "G7", bcb: "Belt 3", gh: "GAPURA", remarks: "Scheduled" },
+            { id: 38, time: "19:10", flight: "MH 725", origin: "Kuala Lumpur (KUL)", stand: "G6", bcb: "Belt 3", gh: "GAPURA", remarks: "Scheduled" },
+            { id: 39, time: "21:30", flight: "MH 727", origin: "Kuala Lumpur (KUL)", stand: "G8", bcb: "Belt 3", gh: "GAPURA", remarks: "Scheduled" },
 
-            titleEl.innerText = title;
-            msgEl.innerText = message;
+            // XiamenAir
+            { id: 40, time: "13:45", flight: "MF 867", origin: "Xiamen (XMN)", stand: "G9", bcb: "Belt 2", gh: "GAPURA", remarks: "Scheduled" },
+            { id: 41, time: "21:05", flight: "MF 855", origin: "Fuzhou (FOC)", stand: "G10", bcb: "Belt 2", gh: "GAPURA", remarks: "Scheduled" },
 
-            clearTimeout(toastTimer);
-            toast.classList.remove('-translate-y-24', 'opacity-0');
-            progressBar.classList.remove('animate-toast-bar');
-            void progressBar.offsetWidth;
+            // China Southern Airlines
+            { id: 42, time: "12:40", flight: "CZ 387", origin: "Guangzhou (CAN)", stand: "G11", bcb: "Belt 2", gh: "GAPURA", remarks: "Scheduled" },
+            { id: 43, time: "19:45", flight: "CZ 3037", origin: "Guangzhou (CAN)", stand: "G12", bcb: "Belt 2", gh: "GAPURA", remarks: "Scheduled" },
+            { id: 44, time: "22:50", flight: "CZ 8353", origin: "Shenzhen (SZX)", stand: "G9", bcb: "Belt 2", gh: "GAPURA", remarks: "Scheduled" },
 
-            if (type === 'success') {
-                iconBox.innerHTML = '<i class="fa-solid fa-check"></i>';
-                iconBox.className = "flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-white bg-emerald-500 text-sm";
-                progressBar.className = "absolute bottom-0 left-0 h-1 bg-emerald-500 animate-toast-bar";
-            } else if (type === 'error') {
-                iconBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
-                iconBox.className = "flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-white bg-rose-500 text-sm";
-                progressBar.className = "absolute bottom-0 left-0 h-1 bg-rose-500 animate-toast-bar";
-            }
+            // China Eastern Airlines
+            { id: 45, time: "01:25", flight: "MU 5069", origin: "Shanghai (PVG)", stand: "G10", bcb: "Belt 1", gh: "GAPURA", remarks: "Scheduled" },
+            { id: 46, time: "21:20", flight: "MU 5071", origin: "Shanghai (PVG)", stand: "G11", bcb: "Belt 1", gh: "GAPURA", remarks: "Scheduled" },
 
-            toastTimer = setTimeout(() => {
-                toast.classList.add('-translate-y-24', 'opacity-0');
-            }, 3500);
-        }
+            // Cathay Pacific
+            { id: 47, time: "13:05", flight: "CX 777", origin: "Hong Kong (HKG)", stand: "G13", bcb: "Belt 4", gh: "JAS", remarks: "Scheduled" },
+            { id: 48, time: "19:55", flight: "CX 719", origin: "Hong Kong (HKG)", stand: "G14", bcb: "Belt 4", gh: "JAS", remarks: "Scheduled" },
+            { id: 49, time: "22:55", flight: "CX 797", origin: "Hong Kong (HKG)", stand: "G13", bcb: "Belt 4", gh: "JAS", remarks: "Scheduled" },
 
-        function handleCSVUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+            // Saudia
+            { id: 50, time: "09:10", flight: "SV 816", origin: "Jeddah (JED)", stand: "G19", bcb: "Belt 6", gh: "GAPURA", remarks: "Scheduled" },
+            { id: 51, time: "13:15", flight: "SV 818", origin: "Jeddah (JED)", stand: "G20", bcb: "Belt 6", gh: "GAPURA", remarks: "Scheduled" },
+            { id: 52, time: "16:40", flight: "SV 822", origin: "Madinah (MED)", stand: "G19", bcb: "Belt 6", gh: "GAPURA", remarks: "Scheduled" },
+            { id: 53, time: "21:45", flight: "SV 826", origin: "Riyadh (RUH)", stand: "G20", bcb: "Belt 6", gh: "GAPURA", remarks: "Scheduled" },
 
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const text = e.target.result;
-                    const rows = parseCSV(text);
-                    if (rows.length < 2) {
-                        showToast('Format Gagal', 'File CSV kosong atau tidak memiliki baris data.', 'error');
-                        return;
-                    }
-                    processCSVImport(rows);
-                } catch (err) {
-                    showToast('Gagal Import', 'Gagal membaca file CSV: ' + err.message, 'error');
-                } finally {
-                    event.target.value = '';
-                }
-            };
-            reader.readAsText(file);
-        }
+            // TransNusa (Internasional)
+            { id: 54, time: "11:45", flight: "8B 502", origin: "Kuala Lumpur (KUL)", stand: "R1", bcb: "Belt 1", gh: "JAS", remarks: "Scheduled" },
+            { id: 55, time: "15:10", flight: "8B 152", origin: "Singapore (SIN)", stand: "R2", bcb: "Belt 1", gh: "JAS", remarks: "Scheduled" },
+            { id: 56, time: "18:20", flight: "8B 506", origin: "Kuala Lumpur (KUL)", stand: "R3", bcb: "Belt 1", gh: "JAS", remarks: "Scheduled" },
+            { id: 57, time: "20:40", flight: "8B 861", origin: "Guangzhou (CAN)", stand: "R4", bcb: "Belt 1", gh: "JAS", remarks: "Scheduled" },
+
+            // Scoot
+            { id: 58, time: "08:50", flight: "TR 274", origin: "Singapore (SIN)", stand: "R5", bcb: "Belt 3", gh: "JAS", remarks: "Scheduled" },
+            { id: 59, time: "16:30", flight: "TR 276", origin: "Singapore (SIN)", stand: "R6", bcb: "Belt 3", gh: "JAS", remarks: "Scheduled" },
+            { id: 60, time: "21:55", flight: "TR 278", origin: "Singapore (SIN)", stand: "R5", bcb: "Belt 3", gh: "JAS", remarks: "Scheduled" },
+
+            // Spring Airlines
+            { id: 61, time: "01:40", flight: "9C 6211", origin: "Shanghai (PVG)", stand: "R7", bcb: "Belt 2", gh: "GAPURA", remarks: "Scheduled" },
+            { id: 62, time: "14:15", flight: "9C 8521", origin: "Guangzhou (CAN)", stand: "R8", bcb: "Belt 2", gh: "GAPURA", remarks: "Scheduled" },
+
+            // SriLankan Airlines
+            { id: 63, time: "13:50", flight: "UL 364", origin: "Colombo (CMB)", stand: "G12", bcb: "Belt 5", gh: "JAS", remarks: "Scheduled" },
+
+            // EVA Air
+            { id: 64, time: "13:40", flight: "BR 237", origin: "Taipei (TPE)", stand: "G15", bcb: "Belt 4", gh: "JAS", remarks: "Scheduled" },
+
+            // All Nippon Airways (ANA)
+            { id: 65, time: "00:15", flight: "NH 855", origin: "Tokyo Haneda (HND)", stand: "G16", bcb: "Belt 5", gh: "JAS", remarks: "Scheduled" },
+            { id: 66, time: "16:05", flight: "NH 835", origin: "Tokyo Narita (NRT)", stand: "G17", bcb: "Belt 5", gh: "JAS", remarks: "Scheduled" },
+            { id: 67, time: "17:25", flight: "NH 871", origin: "Tokyo Haneda (HND)", stand: "G16", bcb: "Belt 5", gh: "JAS", remarks: "Scheduled" },
+
+            // Japan Airlines (JAL)
+            { id: 68, time: "16:50", flight: "JL 725", origin: "Tokyo Narita (NRT)", stand: "G14", bcb: "Belt 5", gh: "JAS", remarks: "Scheduled" },
+            { id: 69, time: "23:45", flight: "JL 729", origin: "Tokyo Narita (NRT)", stand: "G15", bcb: "Belt 5", gh: "JAS", remarks: "Scheduled" },
+
+            // EgyptAir
+            { id: 70, time: "16:20", flight: "MS 977", origin: "Cairo (CAI)", stand: "G19", bcb: "Belt 6", gh: "GAPURA", remarks: "Scheduled" },
+
+            // Air China
+            { id: 71, time: "00:45", flight: "CA 977", origin: "Beijing (PEK)", stand: "G8", bcb: "Belt 1", gh: "GAPURA", remarks: "Scheduled" },
+            { id: 72, time: "20:30", flight: "CA 403", origin: "Chengdu (TFU)", stand: "G9", bcb: "Belt 1", gh: "GAPURA", remarks: "Scheduled" },
+
+            // China Airlines
+            { id: 73, time: "13:35", flight: "CI 761", origin: "Taipei (TPE)", stand: "G10", bcb: "Belt 2", gh: "GAPURA", remarks: "Scheduled" },
+
+            // Korean Air
+            { id: 74, time: "21:10", flight: "KE 627", origin: "Seoul Incheon (ICN)", stand: "G13", bcb: "Belt 3", gh: "GAPURA", remarks: "Scheduled" },
+
+            // Trinity Air / Charter & Regional International
+            { id: 75, time: "11:20", flight: "TRN 102", origin: "Singapore (SIN)", stand: "R9", bcb: "Belt 1", gh: "JAS", remarks: "Scheduled" },
+            { id: 76, time: "17:50", flight: "TRN 208", origin: "Kuala Lumpur (KUL)", stand: "R10", bcb: "Belt 1", gh: "JAS", remarks: "Scheduled" }
+        ];
+
+        let selectedItem = null;
+        let refreshClock = 0;
+        let lastMinute = -1;
+        let currentUser = null;
+        let historyUnsubscribe = null;
+        let isBoardMinimized = false;
+        let editingHistoryId = null; 
+        let currentHistoryLogs = []; 
+        let photos = { fibag: null, labag: null };
 
         function parseCSV(text) {
-            const lines = text.split(/\r\n|\n/);
-            const result = [];
-            for (let i = 0; i < lines.length; i++) {
-                const line = lines[i].trim();
-                if (!line) continue;
-                const row = [];
-                let insideQuote = false;
-                let entry = '';
-                for (let j = 0; j < line.length; j++) {
-                    const char = line[j];
-                    if (char === '"' || char === "'") {
-                        insideQuote = !insideQuote;
-                    } else if ((char === ',' || char === ';') && !insideQuote) {
-                        row.push(entry.trim());
-                        entry = '';
-                    } else {
-                        entry += char;
-                    }
-                }
-                row.push(entry.trim());
-                result.push(row);
+            const rows = [];
+            let row = [''];
+            let quotes = false;
+            for (let char of text) {
+                if (char === '"') quotes = !quotes;
+                else if (char === ',' && !quotes) row.push('');
+                else if (char === '\n' && !quotes) { rows.push(row); row = ['']; }
+                else if (char !== '\r') row[row.length - 1] += char;
             }
-            return result;
+            if (row.length > 1 || row[0] !== '') rows.push(row);
+            return rows;
         }
 
-        function processCSVImport(rows) {
-            const headers = rows[0].map(h => h.toLowerCase().replace(/[^a-z0-9]/g, ''));
-            const dataRows = rows.slice(1);
-            let importedCount = 0;
+        function normTime(t) {
+            if (!t) return "00:00";
+            const clean = t.replace(/[^\d:.]/g, '').replace('.', ':');
+            const p = clean.split(':');
+            const hh = (p[0] || '0').padStart(2, '0');
+            const mm = (p[1] || '00').padEnd(2, '0').substring(0,2);
+            return hh + ":" + mm;
+        }
 
-            dataRows.forEach((row, index) => {
-                if (row.length === 0 || (row.length === 1 && !row[0])) return;
-                
-                const getVal = (possibleKeys) => {
-                    for (let key of possibleKeys) {
-                        const idx = headers.findIndex(h => h.includes(key));
-                        if (idx !== -1 && row[idx] !== undefined) return row[idx].trim();
-                    }
-                    return '';
-                };
+        function toMin(t) {
+            const p = normTime(t).split(':');
+            return parseInt(p[0]) * 60 + parseInt(p[1]);
+        }
 
-                let record = {
-                    type: masterType,
-                    id: Date.now() + index
-                };
+        function setNowTime(id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const now = new Date();
+            const hh = now.getHours().toString().padStart(2, '0');
+            const mm = now.getMinutes().toString().padStart(2, '0');
+            el.value = hh + ":" + mm;
+            updateReport();
+        }
 
-                if (masterType === 'ARRIVAL') {
-                    record.groundHandling = (getVal(['ground', 'handling', 'gh']) || 'GAPURA').toUpperCase();
-                    record.noFlight = (getVal(['flight', 'noflight', 'penerbangan']) || '').toUpperCase();
-                    record.origin = (getVal(['origin', 'asal', 'from']) || '').toUpperCase();
-                    record.bcbNo = (getVal(['bcb', 'bcbno']) || '-').toUpperCase();
-                    record.parkingStand = (getVal(['stand', 'parking', 'parkir']) || '-').toUpperCase();
-                    record.aibt = getVal(['aibt', 'tiba', 'arrival']);
+        function calculateDensity(data) {
+            return data.map(item => {
+                const itemMin = toMin(item.time);
+                const density = data.filter(other => Math.abs(toMin(other.time) - itemMin) <= 30).length;
+                return { ...item, isBusy: density > BUSY_LIMIT };
+            });
+        }
 
-                    if (record.noFlight || record.origin) {
-                        syncCSVRecord(record);
-                        arrivalDataCache.push(record);
-                        importedCount++;
-                    }
-                } else {
-                    record.desk = (getVal(['desk', 'counter']) || 'D01-D03').toUpperCase();
-                    record.flightNo = (getVal(['flight', 'noflight', 'penerbangan']) || '').toUpperCase();
-                    record.maskapai = getVal(['maskapai', 'airline']) || 'Maskapai';
-                    record.dos = (getVal(['dos', 'rute', 'route']) || '').toUpperCase();
-                    record.tipePesawat = (getVal(['tipe', 'pesawat', 'aircraft', 'type']) || '').toUpperCase();
-                    record.std = getVal(['std', 'jadwal']);
-                    record.jamBuka = getVal(['buka', 'open']);
-                    record.jamTutup = getVal(['tutup', 'close']);
+        function getFlightStatus(flight, time) {
+            const log = currentHistoryLogs.find(x => x.flight.toLowerCase() === flight.toLowerCase() && normTime(x.time) === normTime(time));
+            if (!log) return { code: 'WAITING', label: 'WAITING', class: 'status-waiting' };
+            const hasFibag = !!log.fibag;
+            const hasLabag = !!log.labag;
+            if (hasFibag && hasLabag) return { code: 'COMPLETED', label: 'SELESAI', class: 'status-active' };
+            else if (hasFibag || hasLabag) return { code: 'ON_PROGRESS', label: 'PROSES', class: 'bg-amber-500/20 text-amber-400 border border-amber-500/30 animate-pulse' };
+            return { code: 'WAITING', label: 'WAITING', class: 'status-waiting' };
+        }
 
-                    if (record.std && (!record.jamBuka || !record.jamTutup)) {
-                        autoCalculateDepTimesRecord(record);
-                    }
+        function toggleFlightsBoard() {
+            const board = document.getElementById('mainContent');
+            const icon = document.getElementById('toggleBoardIcon');
+            isBoardMinimized = !isBoardMinimized;
+            if (isBoardMinimized) { board.classList.add('hidden'); icon.className = 'fas fa-chevron-down text-xs'; } 
+            else { board.classList.remove('hidden'); icon.className = 'fas fa-chevron-up text-xs'; }
+        }
 
-                    if (record.flightNo || record.std) {
-                        syncCSVRecord(record);
-                        departureDataCache.push(record);
-                        importedCount++;
-                    }
-                }
+        function processRows(rows) {
+            if (rows.length < 1) return;
+            const h = rows[0].map(s => s.toLowerCase().trim());
+            const col = {
+                time: h.findIndex(s => s.includes('jam') || s.includes('aibt') || s.includes('time')),
+                flight: h.findIndex(s => s.includes('flight') || s.includes('no')),
+                origin: h.findIndex(s => s.includes('asal') || s.includes('origin')),
+                stand: h.findIndex(s => s.includes('stand') || s.includes('parkir')),
+                bcb: h.findIndex(s => s.includes('bcb') || s.includes('belt')),
+                gh: h.findIndex(s => s.includes('gh') || s.includes('handling') || s.includes('ground')),
+                remarks: h.findIndex(s => s.includes('rem') || s.includes('ket'))
+            };
+
+            const parsed = rows.slice(1).filter(r => r[col.time]).map((r, i) => ({
+                id: i, 
+                time: (r[col.time] || '').trim(),
+                flight: (r[col.flight] || '').trim(),
+                origin: (r[col.origin] || '').trim(),
+                stand: (r[col.stand] || '').trim(),
+                bcb: (r[col.bcb] || '').trim(),
+                gh: col.gh >= 0 ? (r[col.gh] || '').trim() : '',
+                remarks: col.remarks >= 0 ? (r[col.remarks] || '').trim() : '',
+                source: "CSV"
+            }));
+
+            if (allData.length === 0) {
+                allData = parsed;
+            } else {
+                parsed.forEach(p => {
+                    const exists = allData.find(d => d.flight.toUpperCase().replace(/\s/g, "") === p.flight.toUpperCase().replace(/\s/g, ""));
+                    if (!exists) allData.push(p);
+                });
+            }
+
+            allData = calculateDensity(allData);
+            sortAndRender();
+        }
+
+        async function fetchFlightData() {
+            const icon = document.getElementById('syncIcon');
+            if(icon) icon.classList.add('fa-spin');
+            refreshClock = 0;
+            try {
+                const res = await fetch(`${CSV_URL}&t=${Date.now()}`);
+                if (!res.ok) throw new Error("Gagal mengambil data");
+                const text = await res.text();
+                processRows(parseCSV(text));
+                const syncEl = document.getElementById('lastSync');
+                if(syncEl) syncEl.innerText = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            } catch (e) { 
+                console.error("Gagal sinkronisasi", e); 
+                sortAndRender();
+            } finally { 
+                if(icon) icon.classList.remove('fa-spin'); 
+            }
+        }
+
+        function render(data, currentHHMM) {
+            const tbody = document.getElementById('tbody');
+            const mobile = document.getElementById('mobileCards');
+            const loader = document.getElementById('loader');
+            const empty = document.getElementById('emptyState');
+
+            if (loader) loader.classList.add('hidden');
+            const statTotal = document.getElementById('statTotal');
+            const statLanded = document.getElementById('statLanded');
+            if (statTotal) statTotal.innerText = allData.length;
+            if (statLanded) statLanded.innerText = allData.filter(f => ((f.bcb || '').toLowerCase().includes('belt') || (f.bcb || '').toLowerCase().includes('tiba'))).length;
+
+            if (data.length === 0) { 
+                if (tbody) tbody.innerHTML = ''; 
+                if (mobile) mobile.innerHTML = ''; 
+                if (empty) empty.classList.remove('hidden'); 
+                return; 
+            }
+            if (empty) empty.classList.add('hidden');
+
+            if (tbody) {
+                tbody.innerHTML = data.map(f => {
+                    const isNow = normTime(f.time) === currentHHMM;
+                    const status = getFlightStatus(f.flight, f.time);
+                    const displayAibt = normTime(f.time);
+                    const displayStand = f.stand || "-";
+                    const displayBcb = f.bcb || "-";
+                    const displayRemarks = f.remarks || "-";
+                    const isGoogle = f.source === "GoogleGrounding";
+
+                    return `
+                    <tr class="${isNow ? 'live-row' : 'hover:bg-slate-800/40'} cursor-pointer transition-all" onclick="openModalByRef('${f.flight}', '${f.time}')">
+                        <td class="px-6 py-4 font-bold">
+                            <div class="flex flex-col">
+                                <span class="flex items-center gap-2">
+                                    ${f.isBusy ? '<i class="fas fa-fire busy-indicator text-amber-500"></i>' : ''}
+                                    ${displayAibt}
+                                </span>
+                                ${isNow ? '<span class="live-tag w-fit mt-1">LIVE</span>' : ''}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="bg-slate-800 text-yellow-400 px-2 py-1 rounded font-mono font-bold text-xs border border-slate-700">
+                                ${f.flight}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 font-bold text-slate-300 text-[11px] uppercase">${f.origin}</td>
+                        <td class="px-6 py-4 text-center font-black text-emerald-400">${displayStand}</td>
+                        <td class="px-6 py-4 text-center">
+                            <span class="status-badge ${displayBcb.toLowerCase().includes('belt') ? 'status-active' : 'status-waiting'}">
+                                ${displayBcb}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-center"><span class="status-badge ${status.class}">${status.label}</span></td>
+                        <td class="px-6 py-4 text-xs italic ${isGoogle ? 'text-emerald-400 font-bold' : 'text-slate-400'}">
+                            ${displayRemarks}
+                        </td>
+                    </tr>`;
+                }).join('');
+            }
+
+            if (mobile) {
+                mobile.innerHTML = data.map(f => {
+                    const isNow = normTime(f.time) === currentHHMM;
+                    const status = getFlightStatus(f.flight, f.time);
+
+                    return `
+                    <div class="mobile-card ${isNow ? 'live-row' : ''}" onclick="openModalByRef('${f.flight}', '${f.time}')">
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="flex items-center gap-3">
+                                <span class="font-black text-xl flex flex-col">
+                                    <span class="flex items-center gap-1.5">${f.isBusy ? '<i class="fas fa-fire busy-indicator text-sm"></i>' : ''}${normTime(f.time)}</span>
+                                    ${isNow ? '<span class="live-tag w-fit">LIVE</span>' : ''}
+                                </span>
+                                <span class="bg-slate-800 text-yellow-400 px-2 py-0.5 rounded font-mono font-bold text-[10px] border border-slate-700">${f.flight}</span>
+                            </div>
+                            <div class="flex flex-col items-end gap-1">
+                                <span class="status-badge ${(f.bcb || '').toLowerCase().includes('belt') ? 'status-active' : 'status-waiting'} scale-90">${f.bcb || '-'}</span>
+                                <span class="status-badge ${status.class} scale-90">${status.label}</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-end">
+                            <div class="space-y-0.5">
+                                <p class="text-[9px] font-bold text-slate-500 uppercase">Asal</p>
+                                <p class="font-bold text-slate-200 text-xs uppercase">${f.origin}</p>
+                            </div>
+                            <div class="text-right space-y-0.5"><p class="text-[9px] font-bold text-slate-500 uppercase">Stand</p><p class="font-black text-emerald-400 text-sm">${f.stand || '-'}</p></div>
+                        </div>
+                    </div>`;
+                }).join('');
+            }
+        }
+
+        function sortAndRender() {
+            const now = new Date();
+            const currentHHMM = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+            const searchInput = document.getElementById('searchInput');
+            const term = searchInput ? searchInput.value.toLowerCase() : "";
+
+            const sorted = [...allData].sort((a, b) => {
+                const tA = normTime(a.time);
+                const tB = normTime(b.time);
+                const isNowA = tA === currentHHMM;
+                const isNowB = tB === currentHHMM;
+                if (isNowA && !isNowB) return -1;
+                if (!isNowA && isNowB) return 1;
+                if (tA !== tB) return tA.localeCompare(tB);
+                return b.id - a.id;
             });
 
-            if (importedCount > 0) {
-                showToast('Import Berhasil', `${importedCount} data ${masterType === 'ARRIVAL' ? 'Kedatangan' : 'Keberangkatan'} berhasil diimpor!`, 'success');
-                playChime('success');
-                applyFilteringAndSorting();
+            const filtered = sorted.filter(f => f.flight.toLowerCase().includes(term) || f.origin.toLowerCase().includes(term) || (f.stand || '').toLowerCase().includes(term));
+            render(filtered, currentHHMM);
+        }
+
+        function openModalByRef(flight, time) {
+            selectedItem = allData.find(f => f.flight === flight && f.time === time);
+            if (!selectedItem) return;
+            
+            editingHistoryId = null; 
+            
+            const setVal = (id, val) => { const el = document.getElementById(id); if(el) el.value = val; }
+            const setHTML = (id, val) => { const el = document.getElementById(id); if(el) el.innerHTML = val; }
+            
+            setHTML('modalTitle', "Editor Laporan");
+            setVal('inOfficer', "NURUL HIDAYAT");
+            setVal('inArea', "T3 CGK-International");
+            setVal('inGH', selectedItem.gh || "");
+            setVal('inStand', selectedItem.stand || "");
+            setVal('inBcb', selectedItem.bcb || "");
+            setVal('inReason', "");
+            setVal('inFibag', "");
+            setVal('inLabag', "");
+            setHTML('uiStatusFibag', "");
+            setHTML('uiStatusLabag', "");
+
+            clearPhoto('fibag', true);
+            clearPhoto('labag', true);
+
+            const aibtNorm = normTime(time);
+            if (flight.toUpperCase().replace(/\s/g, "") === "GA821") {
+                setVal('inAibt', "14:06");
+                setVal('inStand', "G2");
+                setVal('inBcb', "Belt 3");
+                setVal('inGH', selectedItem.gh || "GAPURA");
             } else {
-                showToast('Import Gagal', 'Tidak ditemukan kolom data yang cocok.', 'error');
-                playChime('error');
+                setVal('inAibt', aibtNorm);
+            }
+
+            updateReport();
+            const modal = document.getElementById('reportModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
             }
         }
 
-        function autoCalculateDepTimesRecord(record) {
-            let val = record.std.trim();
-            if (val.length === 4 && !val.includes(':') && !isNaN(val)) {
-                val = val.substring(0, 2) + ':' + val.substring(2);
-                record.std = val;
-            }
-            if (/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(val)) {
-                const parts = val.split(':');
-                const totalMins = parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
-                
-                let openMins = (totalMins - 180 + 1440) % 1440;
-                record.jamBuka = `${String(Math.floor(openMins / 60)).padStart(2, '0')}:${String(openMins % 60).padStart(2, '0')}`;
-                
-                let closeMins = (totalMins - 40 + 1440) % 1440;
-                record.jamTutup = `${String(Math.floor(closeMins / 60)).padStart(2, '0')}:${String(closeMins % 60).padStart(2, '0')}`;
+        function editHistoryReport(id) {
+            const item = currentHistoryLogs.find(x => x.id === id);
+            if (!item) return;
+            
+            selectedItem = {
+                flight: item.flight, time: item.time, stand: item.stand || "",
+                origin: item.origin || "", bcb: item.bcb || "", remarks: item.remarks || "", gh: item.gh || ""
+            };
+            
+            editingHistoryId = item.id;
+            const setVal = (id, val) => { const el = document.getElementById(id); if(el) el.value = val; }
+            const setHTML = (id, val) => { const el = document.getElementById(id); if(el) el.innerHTML = val; }
+
+            setHTML('modalTitle', "Edit Laporan Riwayat");
+            setVal('inOfficer', item.officer || "NURUL HIDAYAT");
+            setVal('inArea', item.area || "T3 CGK-International");
+            setVal('inGH', item.gh || "");
+            setVal('inStand', item.stand || "");
+            setVal('inBcb', item.bcb || "");
+            setVal('inAibt', normTime(item.time));
+            setVal('inFibag', item.fibag || "");
+            setVal('inLabag', item.labag || "");
+            setVal('inReason', item.selectedReason || "");
+
+            if (item.photoFibag) {
+                photos.fibag = item.photoFibag;
+                const prev = document.getElementById('prevFibag');
+                const btn = document.getElementById('btnDelFibag');
+                if(prev) { prev.src = item.photoFibag; prev.classList.remove('hidden'); }
+                if(btn) btn.classList.remove('hidden');
+            } else { clearPhoto('fibag', true); }
+
+            if (item.photoLabag) {
+                photos.labag = item.photoLabag;
+                const prev = document.getElementById('prevLabag');
+                const btn = document.getElementById('btnDelLabag');
+                if(prev) { prev.src = item.photoLabag; prev.classList.remove('hidden'); }
+                if(btn) btn.classList.remove('hidden');
+            } else { clearPhoto('labag', true); }
+
+            updateReport();
+            const modal = document.getElementById('reportModal');
+            if(modal) {
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
             }
         }
 
-        function syncCSVRecord(record) {
-            if (typeof google !== 'undefined' && google.script && google.script.run) {
-                google.script.run.saveFlightData(record);
-            } else {
-                fetch(GAS_API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({ action: 'save', record: record })
-                }).catch(() => {});
-            }
+        function closeModal() { 
+            const modal = document.getElementById('reportModal');
+            if(modal) modal.classList.add('hidden'); 
+            document.body.style.overflow = ''; 
+            editingHistoryId = null;
         }
 
-        function downloadCSVTemplate() {
-            let csvContent = "data:text/csv;charset=utf-8,";
-            if (masterType === 'ARRIVAL') {
-                csvContent += "Ground Handling,No Flight,Origin,BCB No,Parking Stand,AIBT\n";
-                csvContent += "GAPURA,GA 183,KNO,BCB-001,B3,14:20\n";
-                csvContent += "JAS,SQ 950,SIN,-,A2,\n";
-            } else {
-                csvContent += "Desk Counter,Flight No,Maskapai,Rute (DOS),Tipe Pesawat,STD,Jam Buka,Jam Tutup\n";
-                csvContent += "D10-D12,GA 182,Garuda Indonesia,CGK-KNO,B737-800,06:45,03:45,06:05\n";
-                csvContent += "E01-E04,ID 6872,Batik Air,CGK-DPS,A320,08:30,,\n";
+        function updateReport() {
+            if (!selectedItem) return;
+            const getVal = (id) => document.getElementById(id) ? document.getElementById(id).value : "";
+            
+            const off = getVal('inOfficer') || ".......";
+            const areaVal = getVal('inArea') || ".......";
+            const gh = getVal('inGH') || ".......";
+            const standVal = getVal('inStand') || ".......";
+            const bcbVal = getVal('inBcb') || ".......";
+            const aibtTime = getVal('inAibt');
+            const fv = getVal('inFibag');
+            const lv = getVal('inLabag');
+            const reasonDrop = getVal('inReason');
+            
+            const aM = toMin(aibtTime);
+            const fM = toMin(fv);
+            const lM = toMin(lv);
+            let fS = "", lS = "", ov = "Achieve";
+            
+            const uiStatusFibag = document.getElementById('uiStatusFibag');
+            const uiStatusLabag = document.getElementById('uiStatusLabag');
+            if(uiStatusFibag) uiStatusFibag.innerHTML = "";
+            if(uiStatusLabag) uiStatusLabag.innerHTML = "";
+            
+            if (fv && aibtTime) { 
+                let diffF = fM - aM;
+                if (diffF < -720) diffF += 1440;
+                if (diffF > 15) { 
+                    fS = " (Not Achieve)"; ov = "Not Achieve"; 
+                    if(uiStatusFibag) uiStatusFibag.innerHTML = '<span class="bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded">NOT ACHIEVE</span>';
+                } else { 
+                    fS = " (Achieve)"; 
+                    if(uiStatusFibag) uiStatusFibag.innerHTML = '<span class="bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded">ACHIEVE</span>';
+                }
+            }
+            if (lv && aibtTime) { 
+                let diffL = lM - aM;
+                if (diffL < -720) diffL += 1440;
+                if (diffL > 30) { 
+                    lS = " (Not Achieve)"; ov = "Not Achieve"; 
+                    if(uiStatusLabag) uiStatusLabag.innerHTML = '<span class="bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded">NOT ACHIEVE</span>';
+                } else { 
+                    lS = " (Achieve)"; 
+                    if(uiStatusLabag) uiStatusLabag.innerHTML = '<span class="bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded">ACHIEVE</span>';
+                }
             }
             
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `Template_${masterType}_FlightOps.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            showToast('Template Diunduh', `Template CSV untuk mode ${masterType} berhasil diunduh.`, 'info');
+            let finalReason = ov;
+            if (ov === "Not Achieve" && reasonDrop) finalReason += ` - ${reasonDrop}`;
+            
+            let fibagPhotoLink = '', labagPhotoLink = '';
+            if (editingHistoryId) {
+                const baseUrl = window.location.origin + window.location.pathname;
+                if (photos.fibag) fibagPhotoLink = `\n📸 Link Foto FIBAG: ${baseUrl}?view=${editingHistoryId}&type=fibag`;
+                if (photos.labag) labagPhotoLink = `\n📸 Link Foto LASTBAG: ${baseUrl}?view=${editingHistoryId}&type=labag`;
+            } else {
+                if (photos.fibag) fibagPhotoLink = `\n📸 Link Foto FIBAG: [Foto terlampir - Link dibuat otomatis saat dikirim]`;
+                if (photos.labag) labagPhotoLink = `\n📸 Link Foto LASTBAG: [Foto terlampir - Link dibuat otomatis saat dikirim]`;
+            }
+
+            const date = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+            const outputEl = document.getElementById('reportOutput');
+            if(outputEl) {
+                outputEl.value = `*REPORT PENGINPUTAN FIBAG LASTBAG T3 – CGK*
+Hari/tgl : ${date}
+Petugas : ${off}
+Area : ${areaVal}
+Ground Handling : ${gh}
+Flight : ${selectedItem.flight}
+Parking stand : ${standVal}
+Origin : ${selectedItem.origin}
+BCB no: ${bcbVal}
+AIBT: ${aibtTime || "......."}
+Fibag : ${fv || "......."}${fS}${fibagPhotoLink}
+Labag : ${lv || "......."}${lS}${labagPhotoLink}
+Reason : ${finalReason}${selectedItem.remarks ? ' (' + selectedItem.remarks + ')' : ''}`;
+            }
         }
+
+        async function saveData(shouldCopy) {
+            const getVal = (id) => document.getElementById(id) ? document.getElementById(id).value : "";
+            const officer = getVal('inOfficer') || "NURUL HIDAYAT";
+            const areaVal = getVal('inArea') || "T3 CGK-International";
+            const gh = getVal('inGH') || "";
+            const aibtTime = getVal('inAibt') || "";
+            const fv = getVal('inFibag') || "";
+            const lv = getVal('inLabag') || "";
+            const standVal = getVal('inStand') || "";
+            const bcbVal = getVal('inBcb') || "";
+            const reasonDrop = getVal('inReason') || "";
+
+            showToast("Menyimpan ke Database...");
+            let docId = editingHistoryId;
+            let reportText = "";
+
+            if (currentUser && selectedItem) {
+                try {
+                    if (docId) {
+                        const docRefVal = doc(db, 'artifacts', appId, 'public', 'data', 'history', docId);
+                        await updateDoc(docRefVal, {
+                            flight: selectedItem.flight, time: aibtTime, officer: officer, area: areaVal,
+                            gh: gh, fibag: fv, labag: lv, stand: standVal, origin: selectedItem.origin || "",
+                            bcb: bcbVal, remarks: selectedItem.remarks || "", selectedReason: reasonDrop,
+                            photoFibag: photos.fibag, photoLabag: photos.labag
+                        });
+                    } else {
+                        const historyCol = collection(db, 'artifacts', appId, 'public', 'data', 'history');
+                        const newDoc = await addDoc(historyCol, {
+                            timestamp: new Date().toISOString(), flight: selectedItem.flight, time: aibtTime,
+                            officer: officer, area: areaVal, gh: gh, fibag: fv, labag: lv, stand: standVal,
+                            origin: selectedItem.origin || "", bcb: bcbVal, remarks: selectedItem.remarks || "",
+                            selectedReason: reasonDrop, photoFibag: photos.fibag, photoLabag: photos.labag, userId: currentUser.uid
+                        });
+                        docId = newDoc.id;
+                    }
+
+                    const date = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+                    const aM = toMin(aibtTime); const fM = toMin(fv); const lM = toMin(lv);
+                    let fS = "", lS = "", ov = "Achieve";
+                    
+                    if (fv && aibtTime) { let diffF = fM - aM; if (diffF < -720) diffF += 1440; if (diffF > 15) { fS = " (Not Achieve)"; ov = "Not Achieve"; } else fS = " (Achieve)"; }
+                    if (lv && aibtTime) { let diffL = lM - aM; if (diffL < -720) diffL += 1440; if (diffL > 30) { lS = " (Not Achieve)"; ov = "Not Achieve"; } else lS = " (Achieve)"; }
+
+                    let finalReason = ov;
+                    if (ov === "Not Achieve" && reasonDrop) finalReason += ` - ${reasonDrop}`;
+
+                    const baseUrl = window.location.origin + window.location.pathname;
+                    let fibagPhotoLink = photos.fibag ? `\n📸 Link Foto FIBAG: ${baseUrl}?view=${docId}&type=fibag` : '';
+                    let labagPhotoLink = photos.labag ? `\n📸 Link Foto LASTBAG: ${baseUrl}?view=${docId}&type=labag` : '';
+
+                    reportText = `*REPORT PENGINPUTAN FIBAG LASTBAG T3 – CGK*\nHari/tgl : ${date}\nPetugas : ${officer}\nArea : ${areaVal}\nGround Handling : ${gh}\nFlight : ${selectedItem.flight}\nParking stand : ${standVal}\nOrigin : ${selectedItem.origin}\nBCB no: ${bcbVal}\nAIBT: ${aibtTime || "......."}\nFibag : ${fv || "......."}${fS}${fibagPhotoLink}\nLabag : ${lv || "......."}${lS}${labagPhotoLink}\nReason : ${finalReason}${selectedItem.remarks ? ' (' + selectedItem.remarks + ')' : ''}`;
+
+                    const finalDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'history', docId);
+                    await updateDoc(finalDocRef, { reportText: reportText });
+                } catch (e) {
+                    showToast("Gagal memproses data ke database Cloud.");
+                    reportText = document.getElementById('reportOutput').value;
+                }
+            } else {
+                reportText = document.getElementById('reportOutput').value;
+            }
+
+            if (shouldCopy) {
+                const dummy = document.createElement("textarea"); document.body.appendChild(dummy);
+                dummy.value = reportText; dummy.select(); document.execCommand('copy'); document.body.removeChild(dummy);
+                showToast("Laporan Lengkap & Link Foto Disalin!");
+            } else { showToast("Laporan Berhasil Disimpan!"); }
+
+            const localFlightIndex = allData.findIndex(f => f.flight === selectedItem.flight && f.time === selectedItem.time);
+            if (localFlightIndex >= 0) { allData[localFlightIndex].stand = standVal; allData[localFlightIndex].bcb = bcbVal; }
+            setTimeout(() => { closeModal(); sortAndRender(); }, 800);
+        }
+
+        async function shareDirectlyToSystem() {
+            const getVal = (id) => document.getElementById(id) ? document.getElementById(id).value : "";
+            const officer = getVal('inOfficer') || "NURUL HIDAYAT";
+            const areaVal = getVal('inArea') || "T3 CGK-International";
+            const gh = getVal('inGH') || "";
+            const aibtTime = getVal('inAibt') || "";
+            const fv = getVal('inFibag') || "";
+            const lv = getVal('inLabag') || "";
+            const standVal = getVal('inStand') || "";
+            const bcbVal = getVal('inBcb') || "";
+            const reasonDrop = getVal('inReason') || "";
+
+            showToast("Menyiapkan dokumen & file foto HP...");
+
+            const date = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+            const aM = toMin(aibtTime);
+            const fM = toMin(fv);
+            const lM = toMin(lv);
+            let fS = "", lS = "", ov = "Achieve";
+            
+            if (fv && aibtTime) { 
+                let diffF = fM - aM;
+                if (diffF < -720) diffF += 1440;
+                if (diffF > 15) { fS = " (Not Achieve)"; ov = "Not Achieve"; } 
+                else fS = " (Achieve)"; 
+            }
+            if (lv && aibtTime) { 
+                let diffL = lM - aM;
+                if (diffL < -720) diffL += 1440;
+                if (diffL > 30) { lS = " (Not Achieve)"; ov = "Not Achieve"; } 
+                else lS = " (Achieve)"; 
+            }
+
+            let finalReason = ov;
+            if (ov === "Not Achieve" && reasonDrop) finalReason += ` - ${reasonDrop}`;
+
+            const cleanReportText = `*REPORT PENGINPUTAN FIBAG LASTBAG T3 – CGK*
+Hari/tgl : ${date}
+Petugas : ${officer}
+Area : ${areaVal}
+Ground Handling : ${gh}
+Flight : ${selectedItem ? selectedItem.flight : ''}
+Parking stand : ${standVal}
+Origin : ${selectedItem ? selectedItem.origin : ''}
+BCB no: ${bcbVal}
+AIBT: ${aibtTime || "......."}
+Fibag : ${fv || "......."}${fS}${photos.fibag ? ' (Foto Terlampir)' : ''}
+Labag : ${lv || "......."}${lS}${photos.labag ? ' (Foto Terlampir)' : ''}
+Reason : ${finalReason}${selectedItem && selectedItem.remarks ? ' (' + selectedItem.remarks + ')' : ''}`;
+
+            const filesArray = [];
+
+            async function base64ToFileObj(base64Data, filename) {
+                const response = await fetch(base64Data);
+                const blob = await response.blob();
+                return new File([blob], filename, { type: "image/jpeg" });
+            }
+
+            try {
+                if (photos.fibag) {
+                    const fileF = await base64ToFileObj(photos.fibag, `FIBAG_${(selectedItem ? selectedItem.flight : 'REPORT').replace(/\s+/g, '')}.jpg`);
+                    filesArray.push(fileF);
+                }
+                if (photos.labag) {
+                    const fileL = await base64ToFileObj(photos.labag, `LASTBAG_${(selectedItem ? selectedItem.flight : 'REPORT').replace(/\s+/g, '')}.jpg`);
+                    filesArray.push(fileL);
+                }
+
+                if (navigator.canShare && filesArray.length > 0 && navigator.canShare({ files: filesArray })) {
+                    await navigator.share({
+                        files: filesArray,
+                        text: cleanReportText,
+                        title: `Laporan FIDS T3 - ${selectedItem ? selectedItem.flight : ''}`
+                    });
+                    showToast("Membuka pilihan sistem share HP...");
+                } else if (navigator.share) {
+                    await navigator.share({
+                        text: cleanReportText,
+                        title: `Laporan FIDS T3 - ${selectedItem ? selectedItem.flight : ''}`
+                    });
+                    showToast("Membuka pilihan sistem share HP...");
+                } else {
+                    const dummy = document.createElement("textarea");
+                    document.body.appendChild(dummy);
+                    dummy.value = cleanReportText;
+                    dummy.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(dummy);
+                    showToast("Web Share tidak didukung. Teks laporan disalin!");
+                }
+            } catch (err) {
+                console.error("Gagal membagikan file bawaan HP:", err);
+                showToast("Pengiriman file dibatalkan.");
+            }
+        }
+
+        function renderHistory(logs) {
+            const tbody = document.getElementById('historyTbody');
+            const mobile = document.getElementById('mobileHistoryCards');
+            const empty = document.getElementById('historyEmptyState');
+            if (logs.length === 0) {
+                if(tbody) tbody.innerHTML = '';
+                if(mobile) mobile.innerHTML = '';
+                if(empty) empty.classList.remove('hidden');
+                return;
+            }
+            if(empty) empty.classList.add('hidden');
+
+            if(tbody) {
+                tbody.innerHTML = logs.map(item => {
+                    const saveDate = item.timestamp ? new Date(item.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '--:--';
+                    const hasFibagPhoto = !!item.photoFibag; const hasLabagPhoto = !!item.photoLabag;
+                    return `
+                    <tr class="hover:bg-slate-800/40 transition-colors text-xs text-slate-300">
+                        <td class="px-6 py-3 font-semibold text-slate-500">${saveDate}</td>
+                        <td class="px-6 py-3 font-bold text-slate-100">${item.flight || '-'}</td>
+                        <td class="px-6 py-3 text-emerald-400 font-bold">${item.stand || '-'}</td>
+                        <td class="px-6 py-3 font-semibold text-slate-400">${item.bcb || '-'}</td>
+                        <td class="px-6 py-3">${item.time || '-'}</td>
+                        <td class="px-6 py-3 text-emerald-400 font-semibold">${item.fibag || '-'}</td>
+                        <td class="px-6 py-3 text-cyan-400 font-semibold">${item.labag || '-'}</td>
+                        <td class="px-6 py-3"><div class="flex gap-2">
+                                ${hasFibagPhoto ? `<button onclick="viewPhotoFromHistory('${item.id}', 'fibag')" class="text-emerald-400 bg-emerald-500/10 p-1 rounded-md text-[10px] hover:bg-emerald-500/20 active:scale-95"><i class="fas fa-camera"></i> FIBAG</button>` : ''}
+                                ${hasLabagPhoto ? `<button onclick="viewPhotoFromHistory('${item.id}', 'labag')" class="text-indigo-400 bg-indigo-500/10 p-1 rounded-md text-[10px] hover:bg-indigo-500/20 active:scale-95"><i class="fas fa-camera"></i> LASTBAG</button>` : ''}
+                                ${!hasFibagPhoto && !hasLabagPhoto ? '<span class="text-slate-600">-</span>' : ''}
+                            </div></td>
+                        <td class="px-6 py-3 text-center flex justify-center gap-2">
+                            <button onclick="editHistoryReport('${item.id}')" class="text-amber-400 hover:text-amber-100 bg-amber-500/10 p-1.5 rounded-lg active:scale-90 font-bold text-[10px]"><i class="fas fa-edit"></i> EDIT</button>
+                            <button onclick="copyReportById('${item.id}')" class="text-cyan-400 hover:text-cyan-100 bg-cyan-500/10 p-1.5 rounded-lg active:scale-90 font-bold text-[10px]"><i class="fas fa-copy"></i> SALIN</button>
+                        </td>
+                    </tr>`;
+                }).join('');
+            }
+
+            if(mobile) {
+                mobile.innerHTML = logs.map(item => {
+                    const saveDate = item.timestamp ? new Date(item.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '--:--';
+                    const hasFibagPhoto = !!item.photoFibag; const hasLabagPhoto = !!item.photoLabag;
+                    return `
+                    <div class="mobile-card">
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="flex items-center gap-2"><span class="font-extrabold text-cyan-400 text-sm">${item.flight || '-'}</span><span class="text-[9px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded">${saveDate}</span></div>
+                            <div class="flex gap-1.5">
+                                <button onclick="editHistoryReport('${item.id}')" class="bg-amber-600 text-white p-2 rounded-xl text-xs active:scale-95 flex items-center gap-1"><i class="fas fa-edit text-[10px]"></i> <span class="font-bold text-[10px]">EDIT</span></button>
+                                <button onclick="copyReportById('${item.id}')" class="bg-indigo-600 text-white p-2 rounded-xl text-xs active:scale-95 flex items-center gap-1"><i class="fas fa-copy text-[10px]"></i> <span class="font-bold text-[10px]">SALIN</span></button>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-1.5 text-[10px] bg-slate-900 p-2 rounded-lg text-slate-400 font-semibold border border-slate-800 mb-2">
+                            <div>STAND: <span class="text-emerald-400 font-bold">${item.stand || '-'}</span></div><div>BCB: <span class="text-yellow-400 font-bold">${item.bcb || '-'}</span></div>
+                            <div>AIBT: <span class="font-black text-slate-200">${item.time || '-'}</span></div><div>FIBAG: <span class="text-emerald-400 font-black">${item.fibag || '-'}</span></div>
+                        </div>
+                        ${hasFibagPhoto || hasLabagPhoto ? `
+                        <div class="flex gap-2 pt-1 border-t border-slate-800">
+                            ${hasFibagPhoto ? `<button onclick="viewPhotoFromHistory('${item.id}', 'fibag')" class="text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded text-[9px] flex items-center gap-1"><i class="fas fa-camera"></i> Foto FIBAG</button>` : ''}
+                            ${hasLabagPhoto ? `<button onclick="viewPhotoFromHistory('${item.id}', 'labag')" class="text-indigo-400 bg-indigo-500/10 px-2 py-1 rounded text-[9px] flex items-center gap-1"><i class="fas fa-camera"></i> Foto LASTBAG</button>` : ''}
+                        </div>` : ''}
+                    </div>`;
+                }).join('');
+            }
+        }
+
+        function compressAndUploadPhoto(input, type) {
+            const file = input.files[0]; if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const img = new Image();
+                img.onload = function () {
+                    const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d');
+                    const MAX_WIDTH = 400; let width = img.width, height = img.height;
+                    if (width > MAX_WIDTH) { height = Math.round((height * MAX_WIDTH) / width); width = MAX_WIDTH; }
+                    canvas.width = width; canvas.height = height; ctx.drawImage(img, 0, 0, width, height);
+                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.5);
+                    photos[type] = compressedBase64;
+                    const prevElement = document.getElementById(`prev${type.charAt(0).toUpperCase() + type.slice(1)}`);
+                    const delButton = document.getElementById(`btnDel${type.charAt(0).toUpperCase() + type.slice(1)}`);
+                    if (prevElement) { prevElement.src = compressedBase64; prevElement.classList.remove('hidden'); }
+                    if (delButton) delButton.classList.remove('hidden');
+                    updateReport();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearPhoto(type, silent = false) {
+            photos[type] = null;
+            const prevElement = document.getElementById(`prev${type.charAt(0).toUpperCase() + type.slice(1)}`);
+            const delButton = document.getElementById(`btnDel${type.charAt(0).toUpperCase() + type.slice(1)}`);
+            if (prevElement) { prevElement.src = ""; prevElement.classList.add('hidden'); }
+            if (delButton) delButton.classList.add('hidden');
+            const inputElement = document.getElementById(`${type}FileInput`);
+            if (inputElement) inputElement.value = "";
+            updateReport();
+        }
+
+        function viewPhoto(src) {
+            const lightbox = document.getElementById('lightbox'); const lightboxImg = document.getElementById('lightboxImg');
+            if (lightbox && lightboxImg) { lightboxImg.src = src; lightbox.classList.remove('hidden'); }
+        }
+
+        function viewPhotoFromHistory(id, type) {
+            const item = currentHistoryLogs.find(x => x.id === id);
+            if (!item) return; const photoSrc = type === 'fibag' ? item.photoFibag : item.photoLabag;
+            if (photoSrc) viewPhoto(photoSrc);
+        }
+
+        function copyOriginalReport(rawText) {
+            const dummy = document.createElement("textarea"); document.body.appendChild(dummy);
+            dummy.value = rawText; dummy.select(); document.execCommand("copy"); document.body.removeChild(dummy);
+            showToast("Salinan Laporan Di-Copy Ulang!");
+        }
+
+        function copyReportById(id) {
+            const item = currentHistoryLogs.find(x => x.id === id);
+            if (item && item.reportText) copyOriginalReport(item.reportText);
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            if (t) { t.innerText = msg; t.style.opacity = '1'; setTimeout(() => t.style.opacity = '0', 2500); }
+        }
+
+        function tick() {
+            const now = new Date(); const min = now.getMinutes();
+            const clockEl = document.getElementById('digitalClock');
+            const dateEl = document.getElementById('currentDate');
+            if(clockEl) clockEl.innerText = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+            if(dateEl) dateEl.innerText = now.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', weekday: 'short' });
+            if (min !== lastMinute) { sortAndRender(); lastMinute = min; }
+            refreshClock++; const p = (refreshClock / REFRESH_RATE) * 100;
+            const pb = document.getElementById('refresh-progress'); if (pb) pb.style.width = `${p}%`;
+            if (refreshClock >= REFRESH_RATE) fetchFlightData();
+        }
+
+        // Export to Window
+        window.closeModal = closeModal;
+        window.openModalByRef = openModalByRef;
+        window.setNowTime = setNowTime;
+        window.updateReport = updateReport;
+        window.saveData = saveData;
+        window.shareDirectlyToSystem = shareDirectlyToSystem;
+        window.copyOriginalReport = copyOriginalReport;
+        window.copyReportById = copyReportById;
+        window.manualRefresh = fetchFlightData;
+        window.toggleFlightsBoard = toggleFlightsBoard;
+        window.editHistoryReport = editHistoryReport;
+        window.compressAndUploadPhoto = compressAndUploadPhoto;
+        window.clearPhoto = clearPhoto;
+        window.viewPhoto = viewPhoto;
+        window.viewPhotoFromHistory = viewPhotoFromHistory;
+
+        window.onload = () => {
+            const searchInput = document.getElementById('searchInput');
+            if(searchInput) searchInput.addEventListener('input', () => sortAndRender());
+            
+            sortAndRender(); 
+            fetchFlightData(); 
+            setInterval(tick, 1000); 
+            tick();
+
+            const initAuthAndSync = async () => {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) await signInWithCustomToken(auth, __initial_auth_token);
+                else await signInAnonymously(auth);
+            };
+
+            initAuthAndSync().catch(console.error);
+            onAuthStateChanged(auth, (user) => {
+                currentUser = user;
+                if (user) {
+                    const historyCol = collection(db, 'artifacts', appId, 'public', 'data', 'history');
+                    if (historyUnsubscribe) historyUnsubscribe();
+                    historyUnsubscribe = onSnapshot(historyCol, (snapshot) => {
+                        const list = []; snapshot.forEach(doc => { list.push({ id: doc.id, ...doc.data() }); });
+                        list.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+                        currentHistoryLogs = list; renderHistory(list); sortAndRender(); 
+                    });
+                }
+            });
+        };
     </script>
 </body>
 </html>
