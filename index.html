@@ -202,8 +202,21 @@
             </div>
         </div>
 
+        <!-- Navigation Tabs -->
+        <div class="flex gap-2 mb-6 bg-slate-900/90 p-1.5 rounded-2xl border border-slate-800 shadow-lg">
+            <button onclick="switchTab('board')" id="tabBtnBoard" class="flex-1 py-3 px-4 rounded-xl font-extrabold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 bg-blue-600 text-white shadow-lg">
+                <i class="fas fa-plane-arrival"></i>
+                <span>Papan Penerbangan</span>
+            </button>
+            <button onclick="switchTab('history')" id="tabBtnHistory" class="flex-1 py-3 px-4 rounded-xl font-extrabold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 text-slate-400 hover:text-white hover:bg-slate-800/60">
+                <i class="fas fa-history"></i>
+                <span>Tab Riwayat</span>
+                <span id="historyBadgeCount" class="bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full text-[10px] font-black">0</span>
+            </button>
+        </div>
+
         <!-- Section: Flight Board -->
-        <section class="mb-6">
+        <section id="sectionBoard" class="mb-6">
             <div class="flex justify-between items-center mb-3">
                 <div class="flex items-center gap-2">
                     <div class="bg-blue-600 text-white p-1.5 rounded-lg shadow-md">
@@ -245,14 +258,20 @@
             </div>
         </section>
 
-        <section class="mt-8">
+        <section id="sectionHistory" class="hidden">
             <div class="flex justify-between items-center mb-4">
                 <div class="flex items-center gap-2">
                     <div class="bg-indigo-600 text-white p-1.5 rounded-lg shadow-md">
                         <i class="fas fa-history text-xs"></i>
                     </div>
-                    <h2 class="text-xs md:text-sm font-extrabold uppercase tracking-widest text-slate-300">Riwayat Laporan Hari Ini (Real-Time)</h2>
+                    <div>
+                        <h2 class="text-xs md:text-sm font-extrabold uppercase tracking-widest text-slate-300">Riwayat Laporan (Penyimpanan Internal)</h2>
+                        <p class="text-[10px] text-slate-500">Data tersimpan otomatis di memori perangkat ini</p>
+                    </div>
                 </div>
+                <button onclick="clearAllLocalHistory()" class="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 flex items-center gap-1.5">
+                    <i class="fas fa-trash-alt"></i> Bersihkan
+                </button>
             </div>
 
             <div class="bg-slate-900 md:rounded-3xl shadow-xl border border-slate-800 overflow-hidden min-h-[150px]">
@@ -393,6 +412,8 @@
                             <option value="Equipment">Equipment</option>
                         </select>
                     </div>
+
+                    <textarea id="reportOutput" class="hidden"></textarea>
                 </div>
             </div>
             <!-- Footer Buttons -->
@@ -485,6 +506,26 @@
         const BUSY_LIMIT = 3;
         const SHEET_ID = '1U9IUqyG6-oNUsbH6WX9ZhEwjKhwNhfgu6-J8267MdqQ';
         const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`;
+        const LOCAL_STORAGE_KEY = 'fids_t3_cgk_history_logs_v1';
+
+        function loadLocalHistory() {
+            try {
+                const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+                return raw ? JSON.parse(raw) : [];
+            } catch (e) {
+                console.error("Gagal membaca penyimpanan internal:", e);
+                return [];
+            }
+        }
+
+        function persistLocalHistory(logs) {
+            try {
+                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(logs));
+            } catch (e) {
+                console.error("Memori internal penuh atau tidak didukung:", e);
+                showToast("Peringatan: Memori internal perangkat penuh!");
+            }
+        }
 
         let allData = [
             // Garuda Indonesia (Internasional)
@@ -619,8 +660,37 @@
         let historyUnsubscribe = null;
         let isBoardMinimized = false;
         let editingHistoryId = null; 
-        let currentHistoryLogs = []; 
+        let currentHistoryLogs = loadLocalHistory(); 
         let photos = { fibag: null, labag: null };
+        let activeTab = 'board';
+
+        function clearAllLocalHistory() {
+            currentHistoryLogs = [];
+            persistLocalHistory([]);
+            renderHistory([]);
+            sortAndRender();
+            showToast("Semua riwayat di penyimpanan internal dibersihkan!");
+        }
+
+        function switchTab(tab) {
+            activeTab = tab;
+            const secBoard = document.getElementById('sectionBoard');
+            const secHistory = document.getElementById('sectionHistory');
+            const btnBoard = document.getElementById('tabBtnBoard');
+            const btnHistory = document.getElementById('tabBtnHistory');
+
+            if (tab === 'board') {
+                if (secBoard) secBoard.classList.remove('hidden');
+                if (secHistory) secHistory.classList.add('hidden');
+                if (btnBoard) btnBoard.className = 'flex-1 py-3 px-4 rounded-xl font-extrabold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 bg-blue-600 text-white shadow-lg';
+                if (btnHistory) btnHistory.className = 'flex-1 py-3 px-4 rounded-xl font-extrabold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 text-slate-400 hover:text-white hover:bg-slate-800/60';
+            } else {
+                if (secBoard) secBoard.classList.add('hidden');
+                if (secHistory) secHistory.classList.remove('hidden');
+                if (btnHistory) btnHistory.className = 'flex-1 py-3 px-4 rounded-xl font-extrabold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 bg-indigo-600 text-white shadow-lg';
+                if (btnBoard) btnBoard.className = 'flex-1 py-3 px-4 rounded-xl font-extrabold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 text-slate-400 hover:text-white hover:bg-slate-800/60';
+            }
+        }
 
         function parseCSV(text) {
             const rows = [];
@@ -1045,66 +1115,88 @@ Reason : ${finalReason}${selectedItem.remarks ? ' (' + selectedItem.remarks + ')
             const bcbVal = getVal('inBcb') || "";
             const reasonDrop = getVal('inReason') || "";
 
-            showToast("Menyimpan ke Database...");
-            let docId = editingHistoryId;
-            let reportText = "";
+            if (!selectedItem) return;
 
-            if (currentUser && selectedItem) {
+            const isEditing = !!editingHistoryId;
+            let docId = editingHistoryId || ('local_' + Date.now());
+
+            const date = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+            const aM = toMin(aibtTime); const fM = toMin(fv); const lM = toMin(lv);
+            let fS = "", lS = "", ov = "Achieve";
+            
+            if (fv && aibtTime) { let diffF = fM - aM; if (diffF < -720) diffF += 1440; if (diffF > 15) { fS = " (Not Achieve)"; ov = "Not Achieve"; } else fS = " (Achieve)"; }
+            if (lv && aibtTime) { let diffL = lM - aM; if (diffL < -720) diffL += 1440; if (diffL > 30) { lS = " (Not Achieve)"; ov = "Not Achieve"; } else lS = " (Achieve)"; }
+
+            let finalReason = ov;
+            if (ov === "Not Achieve" && reasonDrop) finalReason += ` - ${reasonDrop}`;
+
+            const baseUrl = window.location.origin + window.location.pathname;
+            let fibagPhotoLink = photos.fibag ? `\n📸 Link Foto FIBAG: ${baseUrl}?view=${docId}&type=fibag` : '';
+            let labagPhotoLink = photos.labag ? `\n📸 Link Foto LASTBAG: ${baseUrl}?view=${docId}&type=labag` : '';
+
+            const reportText = `*REPORT PENGINPUTAN FIBAG LASTBAG T3 – CGK*\nHari/tgl : ${date}\nPetugas : ${officer}\nArea : ${areaVal}\nGround Handling : ${gh}\nFlight : ${selectedItem.flight}\nParking stand : ${standVal}\nOrigin : ${selectedItem.origin}\nBCB no: ${bcbVal}\nAIBT: ${aibtTime || "......."}\nFibag : ${fv || "......."}${fS}${fibagPhotoLink}\nLabag : ${lv || "......."}${lS}${labagPhotoLink}\nReason : ${finalReason}${selectedItem.remarks ? ' (' + selectedItem.remarks + ')' : ''}`;
+
+            const entryPayload = {
+                id: docId,
+                timestamp: new Date().toISOString(),
+                flight: selectedItem.flight,
+                time: aibtTime,
+                officer: officer,
+                area: areaVal,
+                gh: gh,
+                fibag: fv,
+                labag: lv,
+                stand: standVal,
+                origin: selectedItem.origin || "",
+                bcb: bcbVal,
+                remarks: selectedItem.remarks || "",
+                selectedReason: reasonDrop,
+                photoFibag: photos.fibag,
+                photoLabag: photos.labag,
+                reportText: reportText
+            };
+
+            // 1. Simpan ke Penyimpanan Internal (localStorage)
+            if (isEditing) {
+                const idx = currentHistoryLogs.findIndex(x => x.id === docId);
+                if (idx >= 0) currentHistoryLogs[idx] = { ...currentHistoryLogs[idx], ...entryPayload };
+                else currentHistoryLogs.unshift(entryPayload);
+            } else {
+                currentHistoryLogs.unshift(entryPayload);
+            }
+            persistLocalHistory(currentHistoryLogs);
+            renderHistory(currentHistoryLogs);
+
+            // 2. Sinkronisasi ke Cloud Firestore (jika aktif)
+            if (currentUser) {
                 try {
-                    if (docId) {
+                    if (isEditing && !docId.startsWith('local_')) {
                         const docRefVal = doc(db, 'artifacts', appId, 'public', 'data', 'history', docId);
-                        await updateDoc(docRefVal, {
-                            flight: selectedItem.flight, time: aibtTime, officer: officer, area: areaVal,
-                            gh: gh, fibag: fv, labag: lv, stand: standVal, origin: selectedItem.origin || "",
-                            bcb: bcbVal, remarks: selectedItem.remarks || "", selectedReason: reasonDrop,
-                            photoFibag: photos.fibag, photoLabag: photos.labag
-                        });
+                        await updateDoc(docRefVal, entryPayload);
                     } else {
                         const historyCol = collection(db, 'artifacts', appId, 'public', 'data', 'history');
-                        const newDoc = await addDoc(historyCol, {
-                            timestamp: new Date().toISOString(), flight: selectedItem.flight, time: aibtTime,
-                            officer: officer, area: areaVal, gh: gh, fibag: fv, labag: lv, stand: standVal,
-                            origin: selectedItem.origin || "", bcb: bcbVal, remarks: selectedItem.remarks || "",
-                            selectedReason: reasonDrop, photoFibag: photos.fibag, photoLabag: photos.labag, userId: currentUser.uid
-                        });
-                        docId = newDoc.id;
+                        const { id, ...cloudData } = entryPayload;
+                        await addDoc(historyCol, { ...cloudData, userId: currentUser.uid });
                     }
-
-                    const date = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-                    const aM = toMin(aibtTime); const fM = toMin(fv); const lM = toMin(lv);
-                    let fS = "", lS = "", ov = "Achieve";
-                    
-                    if (fv && aibtTime) { let diffF = fM - aM; if (diffF < -720) diffF += 1440; if (diffF > 15) { fS = " (Not Achieve)"; ov = "Not Achieve"; } else fS = " (Achieve)"; }
-                    if (lv && aibtTime) { let diffL = lM - aM; if (diffL < -720) diffL += 1440; if (diffL > 30) { lS = " (Not Achieve)"; ov = "Not Achieve"; } else lS = " (Achieve)"; }
-
-                    let finalReason = ov;
-                    if (ov === "Not Achieve" && reasonDrop) finalReason += ` - ${reasonDrop}`;
-
-                    const baseUrl = window.location.origin + window.location.pathname;
-                    let fibagPhotoLink = photos.fibag ? `\n📸 Link Foto FIBAG: ${baseUrl}?view=${docId}&type=fibag` : '';
-                    let labagPhotoLink = photos.labag ? `\n📸 Link Foto LASTBAG: ${baseUrl}?view=${docId}&type=labag` : '';
-
-                    reportText = `*REPORT PENGINPUTAN FIBAG LASTBAG T3 – CGK*\nHari/tgl : ${date}\nPetugas : ${officer}\nArea : ${areaVal}\nGround Handling : ${gh}\nFlight : ${selectedItem.flight}\nParking stand : ${standVal}\nOrigin : ${selectedItem.origin}\nBCB no: ${bcbVal}\nAIBT: ${aibtTime || "......."}\nFibag : ${fv || "......."}${fS}${fibagPhotoLink}\nLabag : ${lv || "......."}${lS}${labagPhotoLink}\nReason : ${finalReason}${selectedItem.remarks ? ' (' + selectedItem.remarks + ')' : ''}`;
-
-                    const finalDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'history', docId);
-                    await updateDoc(finalDocRef, { reportText: reportText });
                 } catch (e) {
-                    showToast("Gagal memproses data ke database Cloud.");
-                    reportText = document.getElementById('reportOutput').value;
+                    console.warn("Disimpan di penyimpanan internal (offline/cloud skip):", e);
                 }
-            } else {
-                reportText = document.getElementById('reportOutput').value;
             }
 
             if (shouldCopy) {
                 const dummy = document.createElement("textarea"); document.body.appendChild(dummy);
                 dummy.value = reportText; dummy.select(); document.execCommand('copy'); document.body.removeChild(dummy);
-                showToast("Laporan Lengkap & Link Foto Disalin!");
-            } else { showToast("Laporan Berhasil Disimpan!"); }
+                showToast("Tersimpan di Internal & Teks Disalin!");
+            } else {
+                showToast("Tersimpan ke Penyimpanan Internal!");
+            }
 
             const localFlightIndex = allData.findIndex(f => f.flight === selectedItem.flight && f.time === selectedItem.time);
             if (localFlightIndex >= 0) { allData[localFlightIndex].stand = standVal; allData[localFlightIndex].bcb = bcbVal; }
-            setTimeout(() => { closeModal(); sortAndRender(); }, 800);
+            
+            closeModal();
+            sortAndRender();
+            switchTab('history');
         }
 
         async function shareDirectlyToSystem() {
@@ -1207,6 +1299,9 @@ Reason : ${finalReason}${selectedItem && selectedItem.remarks ? ' (' + selectedI
             const tbody = document.getElementById('historyTbody');
             const mobile = document.getElementById('mobileHistoryCards');
             const empty = document.getElementById('historyEmptyState');
+            const badge = document.getElementById('historyBadgeCount');
+            if (badge) badge.innerText = logs.length;
+
             if (logs.length === 0) {
                 if(tbody) tbody.innerHTML = '';
                 if(mobile) mobile.innerHTML = '';
@@ -1342,6 +1437,8 @@ Reason : ${finalReason}${selectedItem && selectedItem.remarks ? ' (' + selectedI
         }
 
         // Export to Window
+        window.switchTab = switchTab;
+        window.clearAllLocalHistory = clearAllLocalHistory;
         window.closeModal = closeModal;
         window.openModalByRef = openModalByRef;
         window.setNowTime = setNowTime;
@@ -1362,6 +1459,10 @@ Reason : ${finalReason}${selectedItem && selectedItem.remarks ? ' (' + selectedI
             const searchInput = document.getElementById('searchInput');
             if(searchInput) searchInput.addEventListener('input', () => sortAndRender());
             
+            // Muat & tampilkan riwayat dari penyimpanan internal saat aplikasi dibuka
+            currentHistoryLogs = loadLocalHistory();
+            renderHistory(currentHistoryLogs);
+            
             sortAndRender(); 
             fetchFlightData(); 
             setInterval(tick, 1000); 
@@ -1379,9 +1480,14 @@ Reason : ${finalReason}${selectedItem && selectedItem.remarks ? ' (' + selectedI
                     const historyCol = collection(db, 'artifacts', appId, 'public', 'data', 'history');
                     if (historyUnsubscribe) historyUnsubscribe();
                     historyUnsubscribe = onSnapshot(historyCol, (snapshot) => {
-                        const list = []; snapshot.forEach(doc => { list.push({ id: doc.id, ...doc.data() }); });
-                        list.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
-                        currentHistoryLogs = list; renderHistory(list); sortAndRender(); 
+                        const cloudList = []; snapshot.forEach(doc => { cloudList.push({ id: doc.id, ...doc.data() }); });
+                        if (cloudList.length > 0) {
+                            cloudList.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+                            currentHistoryLogs = cloudList;
+                            persistLocalHistory(currentHistoryLogs);
+                            renderHistory(currentHistoryLogs);
+                            sortAndRender();
+                        }
                     });
                 }
             });
